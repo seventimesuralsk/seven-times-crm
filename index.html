@@ -292,7 +292,7 @@ font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;
 .acc-group-header .chev{transition:transform .25s ease;color:var(--sub);font-size:13px;}
 .acc-group.open .acc-group-header{color:var(--blue);}
 .acc-group.open .acc-group-header .chev{transform:rotate(90deg);color:var(--blue);}
-.acc-sublist{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1);}
+.acc-sublist{display:grid;grid-template-rows:0fr;overflow:hidden;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1);will-change:grid-template-rows;}
 .acc-sublist > div{overflow:hidden;min-height:0;}
 .acc-group.open .acc-sublist{grid-template-rows:1fr;}
 .acc-item{padding:12px 4px 12px 16px;font-size:14px;color:var(--ink);cursor:pointer;border-top:1px solid var(--line);-webkit-tap-highlight-color:transparent;}
@@ -440,7 +440,11 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="mode-btn" data-mode="text">🔒 Текстом</div>
 </div>
 <div id="mode-manual">
-<input type="text" id="catSearchInput" placeholder="🔍 Поиск по статьям — например «молоко»" style="margin-bottom:14px;">
+<div style="position:relative;margin-bottom:14px;">
+<input type="text" id="catSearchInput" placeholder="" style="width:100%;box-sizing:border-box;padding-left:38px;">
+<span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--sub);">🔍</span>
+<span id="catSearchHint" style="position:absolute;left:38px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:15px;pointer-events:none;transition:opacity .35s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 50px);"></span>
+</div>
 <div class="group-title">Выбери группу</div>
 <div id="guidedGroups"></div>
 <div class="group-title">Внесено сегодня</div>
@@ -1672,8 +1676,32 @@ return `<div class="acc-input-inline">
 
 document.getElementById('catSearchInput').addEventListener('input', e=>{
 catSearchQuery = e.target.value;
+updateSearchHintVisibility();
 renderGuidedGroups();
 });
+document.getElementById('catSearchInput').addEventListener('focus', updateSearchHintVisibility);
+document.getElementById('catSearchInput').addEventListener('blur', updateSearchHintVisibility);
+function updateSearchHintVisibility(){
+const inp = document.getElementById('catSearchInput');
+const hint = document.getElementById('catSearchHint');
+const shouldHide = document.activeElement===inp || inp.value!=='';
+hint.style.opacity = shouldHide ? '0' : '1';
+}
+const SEARCH_HINT_EXAMPLES = ['Например: Молоко','Например: Kaspi QR','Например: Наличные','Например: Курьер','Например: Такси'];
+let searchHintIdx = 0;
+function cycleSearchHint(){
+const hint = document.getElementById('catSearchHint');
+if(!hint) return;
+hint.style.opacity = '0';
+setTimeout(()=>{
+searchHintIdx = (searchHintIdx+1) % SEARCH_HINT_EXAMPLES.length;
+hint.textContent = SEARCH_HINT_EXAMPLES[searchHintIdx];
+updateSearchHintVisibility();
+}, 350);
+}
+document.getElementById('catSearchHint').textContent = SEARCH_HINT_EXAMPLES[0];
+setInterval(cycleSearchHint, 2600);
+
 let newCatMode = null; // группа, в которой сейчас открыт ввод "своя статья", или null
 let catSearchQuery = '';
 
@@ -1892,6 +1920,7 @@ newCatMode = null;
 catSearchQuery = '';
 const searchInp = document.getElementById('catSearchInput');
 if(searchInp) searchInp.value = '';
+if(typeof updateSearchHintVisibility==='function') updateSearchHintVisibility();
 renderGuidedGroups();
 renderEnteredList();
 const banner = document.getElementById('entryDateBanner');
