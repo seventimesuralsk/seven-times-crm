@@ -7,22 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
---bg:#f5f5f7;
+--bg:#faf7f2;
 --card:#ffffff;
---ink:#1d1d1f;
---sub:#6e6e73;
---line:#e8e8ed;
---line2:#d2d2d7;
---surface2:#f5f5f7;
---blue:#0071e3;
---blue-d:#0058b0;
---green:#1fae52;
---red:#e0483a;
---orange:#d97706;
+--ink:#2b1d13;
+--sub:#8a7862;
+--line:#ece3d5;
+--line2:#ddccb3;
+--surface2:#f5efe4;
+--blue:#b4762a;
+--blue-d:#8f5c1e;
+--green:#3f7d43;
+--red:#c1442c;
+--orange:#b4762a;
 --navy:#ffffff;
---navy2:#f5f5f7;
+--navy2:#f5efe4;
 --radius:12px;
---shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
+--shadow:0 1px 2px rgba(43,29,19,.05), 0 8px 20px rgba(43,29,19,.07);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;}
@@ -151,6 +151,12 @@ border-radius:13px;transition:.15s;
 .field label{font-size:12.5px;color:var(--sub);}
 .field input{width:100%;}
 .totals-bar{display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;}
+.kpi-cell{background:var(--surface2);border-radius:10px;padding:12px 14px;}
+.kpi-label{font-size:11.5px;color:var(--sub);margin-bottom:4px;}
+.kpi-value{font-size:18px;font-weight:800;margin-bottom:4px;}
+.ratio-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px;color:var(--sub);}
+.ratio-row b{color:var(--ink);font-size:14px;}
 .stat{
 flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:8px;
 padding:16px;box-shadow:var(--shadow);
@@ -175,7 +181,7 @@ tr.total-row td{font-weight:700;border-top:2px solid var(--ink);}
 .bar-row{display:flex;align-items:center;gap:10px;}
 .bar-label{width:150px;font-size:13px;color:var(--sub);flex-shrink:0;}
 .bar-track{flex:1;background:var(--surface2);border-radius:8px;height:22px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#0071e3,#5ac8fa);transition:width .6s cubic-bezier(.22,1,.36,1);}
+.bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--blue),#e0a75c);transition:width .6s cubic-bezier(.22,1,.36,1);}
 .vchart{display:flex;align-items:flex-end;gap:6px;overflow-x:auto;padding-bottom:4px;min-height:180px;}
 .vchart-col{flex:1 0 34px;display:flex;flex-direction:column;align-items:center;min-width:34px;}
 .vchart-val{font-size:9.5px;color:var(--sub);margin-bottom:4px;white-space:nowrap;font-weight:600;height:12px;}
@@ -383,7 +389,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="side-link" data-view="reports" data-report-group="courier">Курьеры</div>
 <div class="side-link" data-view="reports" data-report-group="podzp">Под ЗП</div>
 <div class="side-group-title">Прочее</div>
-<div class="side-link" id="presentationLink" style="background:linear-gradient(135deg,#0071e3,#5ac8fa);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:space-between;">
+<div class="side-link" id="presentationLink" style="background:linear-gradient(135deg,var(--blue),#8f5c1e);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:space-between;">
 <span>🎁 Презентация</span><span style="font-size:11px;opacity:.85;">🔒</span>
 </div>
 <div class="side-link" data-view="settings">Настройки</div>
@@ -524,6 +530,11 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 </div>
 <div id="periodExtra" style="margin-bottom:16px;"></div>
 <div id="summaryCards">
+<div class="card" id="analyticsCard">
+<h3>📊 Аналитика — сравнение с прошлым периодом</h3>
+<div id="analyticsGrid"></div>
+<div id="analyticsRatios" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);"></div>
+</div>
 <div class="totals-bar" id="totalsBar"></div>
 <div class="card">
 <h3>Агрегаторы</h3>
@@ -716,7 +727,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 </div>
 
 <div class="view" id="view-presentation">
-<div class="card" style="background:linear-gradient(135deg,#0071e3,#5ac8fa);color:#fff;text-align:center;padding:28px 18px;">
+<div class="card" style="background:linear-gradient(135deg,var(--blue),#8f5c1e);color:#fff;text-align:center;padding:28px 18px;">
 <div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.08em;">Seven Times · Coffee & Kitchen</div>
 <div style="font-size:24px;font-weight:800;margin-top:4px;" id="presTitle">Презентация</div>
 <div style="font-size:13px;opacity:.9;margin-top:4px;" id="presSubtitle"></div>
@@ -2328,6 +2339,26 @@ function sumByGroup(branch, period){
 const {from, to} = dateRangeForPeriod(period, branch);
 return sumByGroupRange(branch, from, to);
 }
+// Возвращает диапазон "такой же длины, сразу перед" — для сравнения "было / стало"
+function previousPeriodRange(from, to){
+const lenDays = Math.round((to - from) / 86400000) + 1;
+const prevTo = new Date(from); prevTo.setDate(prevTo.getDate()-1);
+const prevFrom = new Date(prevTo); prevFrom.setDate(prevFrom.getDate()-(lenDays-1));
+return {from: prevFrom, to: prevTo};
+}
+// % изменения, с защитой от деления на 0
+function pctChange(cur, prev){
+if(!prev) return cur ? 100 : 0;
+return ((cur-prev)/Math.abs(prev))*100;
+}
+function trendBadgeHtml(pct, isGood){
+if(!isFinite(pct)) pct = 0;
+if(isGood===undefined) isGood = pct>=0;
+const up = pct >= 0;
+const color = isGood ? 'var(--green)' : 'var(--red)';
+const arrow = up ? '▲' : '▼';
+return `<span style="color:${color};font-weight:700;font-size:12.5px;">${arrow} ${Math.abs(pct).toFixed(1)}%</span>`;
+}
 function sumByGroupRange(branch, from, to){
 const branchData = DATA[branch] || {};
 const totals = {};
@@ -2523,6 +2554,42 @@ document.getElementById('summaryCards').style.display = '';
 document.getElementById('dailyTrendCard').style.display = 'none';
 const {totals, merged} = sumByGroup(state.branch, state.period);
 const f = computeFormulas(merged);
+
+// --- Аналитика: сравнение с предыдущим таким же периодом ---
+const {from: curFrom, to: curTo} = dateRangeForPeriod(state.period, state.branch);
+const {from: prevFrom, to: prevTo} = previousPeriodRange(curFrom, curTo);
+const {merged: prevMerged} = sumByGroupRange(state.branch, prevFrom, prevTo);
+const pf = computeFormulas(prevMerged);
+
+const fmtRange = d=> d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'});
+document.getElementById('analyticsCard').querySelector('h3').innerHTML =
+`📊 Аналитика — ${fmtRange(curFrom)}–${fmtRange(curTo)} в сравнении с ${fmtRange(prevFrom)}–${fmtRange(prevTo)}`;
+
+const kpis = [
+{label:'Продажи', cur:f.sales, prev:pf.sales, goodIfUp:true},
+{label:'Расходы (закуп)', cur:f.zakup, prev:pf.zakup, goodIfUp:false},
+{label:'Зарплата', cur:f.salary, prev:pf.salary, goodIfUp:false},
+{label:'Итог чистыми', cur:f.net, prev:pf.net, goodIfUp:true},
+];
+document.getElementById('analyticsGrid').innerHTML = `<div class="kpi-grid">${kpis.map(k=>{
+const pct = pctChange(k.cur, k.prev);
+const isGood = k.goodIfUp ? pct>=0 : pct<=0;
+return `<div class="kpi-cell">
+<div class="kpi-label">${k.label}</div>
+<div class="kpi-value">${fmt(k.cur)}</div>
+<div>${trendBadgeHtml(pct, isGood)}</div>
+</div>`;
+}).join('')}</div>`;
+
+const zakupPct = f.sales>0 ? (f.zakup/f.sales*100) : 0;
+const salaryPct = f.sales>0 ? (f.salary/f.sales*100) : 0;
+const netPct = f.sales>0 ? (f.net/f.sales*100) : 0;
+document.getElementById('analyticsRatios').innerHTML = `
+<div class="ratio-row"><span>Доля расходов от продаж</span><b>${zakupPct.toFixed(1)}%</b></div>
+<div class="ratio-row"><span>Доля зарплаты от продаж</span><b>${salaryPct.toFixed(1)}%</b></div>
+<div class="ratio-row"><span>Чистая маржа</span><b style="color:${netPct>=0?'var(--green)':'var(--red)'}">${netPct.toFixed(1)}%</b></div>
+`;
+
 document.getElementById('totalsBar').innerHTML = `
 <div class="stat pos"><div class="label">Общая продажа</div><div class="value">${fmt(f.sales)}</div></div>
 <div class="stat"><div class="label">Расходы (закуп+прочее)</div><div class="value">${fmt(f.zakup)}</div></div>
