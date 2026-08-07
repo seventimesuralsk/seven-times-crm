@@ -293,6 +293,8 @@ font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;
 .acc-item{padding:12px 4px 12px 16px;font-size:14px;color:var(--ink);cursor:pointer;border-top:1px solid var(--line);-webkit-tap-highlight-color:transparent;}
 .acc-item:active{background:var(--surface2);}
 .acc-item.active{background:var(--blue);color:#fff;font-weight:600;}
+.acc-input-inline{padding:12px 14px 16px;background:var(--surface2);border-top:1px solid var(--line);}
+.acc-newcat{color:var(--blue);font-weight:600;font-size:13.5px;}
 .source-chip.source-cash.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f;}
 .source-chip.source-kaspi.active{background:#e0483a;color:#fff;border-color:#e0483a;}
 .guided-input-row{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
@@ -428,21 +430,6 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 <div id="mode-manual">
 <div class="group-title">Выбери группу</div>
 <div id="guidedGroups"></div>
-<div class="chip-row" id="guidedSourceRow" style="display:none;margin:14px 0 0;">
-<div class="group-title" style="margin:0 10px 0 0;align-self:center;">Изъято (необязательно):</div>
-<div class="pick-chip source-chip source-cash" data-source="Наличные">Наличные</div>
-<div class="pick-chip source-chip source-kaspi" data-source="Kaspi перевод">Kaspi перевод</div>
-</div>
-<div class="guided-input-row" id="guidedInputRow" style="display:none;">
-<input type="number" inputmode="decimal" id="guidedValue" placeholder="Сумма">
-<input type="hidden" id="guidedSource" value="">
-<input type="text" id="guidedNote" placeholder="Примечание" style="display:none;">
-<button class="parse-btn" id="guidedAddBtn">Добавить</button>
-</div>
-<label id="guidedUnpaidRow" style="display:none;align-items:center;gap:8px;margin:-10px 0 16px;font-size:13.5px;color:var(--sub);cursor:pointer;">
-<input type="checkbox" id="guidedUnpaid" style="width:auto;">
-Ещё не оплачено — в долг поставщику (уйдёт в раздел «Поставщики», а не в расходы дня)
-</label>
 <div class="group-title">Внесено сегодня</div>
 <div id="enteredList"><div class="empty">Пока ничего не внесено</div></div>
 </div>
@@ -1454,16 +1441,40 @@ document.getElementById('guidedSource').value = '';
 const NOTE_HIDDEN_GROUPS = ['agg','term','cash','expense','unpaid'];
 const NOTE_REQUIRED_GROUPS = ['salary_daily','advance','courier','podzp'];
 
+function inputRowHtml(){
+return `<div class="acc-input-inline">
+<div class="guided-input-row" id="guidedInputRow">
+<input type="number" inputmode="decimal" id="guidedValue" placeholder="Сумма">
+<input type="hidden" id="guidedSource" value="">
+<input type="text" id="guidedNote" placeholder="Примечание" style="display:none;">
+<button class="parse-btn" id="guidedAddBtn">Добавить</button>
+</div>
+<div class="chip-row" id="guidedSourceRow" style="display:none;margin-top:10px;">
+<div class="group-title" style="margin:0 10px 0 0;align-self:center;">Изъято (необязательно):</div>
+<div class="pick-chip source-chip source-cash" data-source="Наличные">Наличные</div>
+<div class="pick-chip source-chip source-kaspi" data-source="Kaspi перевод">Kaspi перевод</div>
+</div>
+<label id="guidedUnpaidRow" style="display:none;align-items:center;gap:8px;margin-top:10px;font-size:13.5px;color:var(--sub);cursor:pointer;">
+<input type="checkbox" id="guidedUnpaid" style="width:auto;">
+Ещё не оплачено — в долг поставщику (уйдёт в раздел «Поставщики», а не в расходы дня)
+</label>
+</div>`;
+}
+
 function renderGuidedGroups(){
 const box = document.getElementById('guidedGroups');
 const groups = GROUP_ORDER.filter(g=>Object.keys(COLUMNS).some(k=>COLUMNS[k].group===g));
 box.innerHTML = groups.map(g=>{
 const keys = Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===g);
+const newCatHtml = `<div class="acc-item acc-newcat" data-newcat="1">💡 Не нашли? Добавьте свой вариант</div>`;
+const itemsHtml = keys.map(k=>{
+let html = `<div class="acc-item ${selectedCatKey===k?'active':''}" data-k="${k}">${COLUMNS[k].name}</div>`;
+if(guidedGroup===g && selectedCatKey===k){ html += inputRowHtml(); }
+return html;
+}).join('');
 return `<div class="acc-group ${g===guidedGroup?'open':''}" data-g="${g}">
 <div class="acc-group-header"><span>${GROUP_LABELS[g]}</span><span class="chev">▶</span></div>
-<div class="acc-sublist">${keys.map(k=>`<div class="acc-item ${selectedCatKey===k?'active':''}" data-k="${k}">${COLUMNS[k].name}</div>`).join('')}
-${keys.length>6 ? `<div class="acc-item" data-newcat="1" style="color:var(--blue);">+ Своя статья (если купили что-то новое)</div>` : ''}
-</div>
+<div class="acc-sublist">${newCatHtml}${itemsHtml}</div>
 </div>`;
 }).join('');
 
@@ -1473,7 +1484,6 @@ const grp = header.closest('.acc-group');
 const g = grp.dataset.g;
 if(guidedGroup === g){ guidedGroup = null; } else { guidedGroup = g; }
 selectedCatKey = null;
-resetGuidedInputArea();
 renderGuidedGroups();
 });
 });
@@ -1481,9 +1491,10 @@ box.querySelectorAll('.acc-item[data-k]').forEach(item=>{
 item.addEventListener('click', ()=>{
 selectedCatKey = item.dataset.k;
 guidedGroup = item.closest('.acc-group').dataset.g;
-selectCategory(selectedCatKey);
 renderGuidedGroups();
-item.scrollIntoView({behavior:'smooth', block:'center'});
+setupInlineInput();
+const el = box.querySelector('.acc-item.active');
+if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
 });
 });
 box.querySelectorAll('.acc-item[data-newcat]').forEach(item=>{
@@ -1493,50 +1504,47 @@ const name = prompt('Название новой статьи, например 
 if(!name || !name.trim()) return;
 const key = addFreeCategory(name.trim(), guidedGroup);
 selectedCatKey = key;
-selectCategory(key);
 renderGuidedGroups();
+setupInlineInput();
+});
+});
+setupInlineInput();
+}
+
+function setupInlineInput(){
+const inputRow = document.getElementById('guidedInputRow');
+if(!inputRow || !selectedCatKey) return;
+const unpaidRow = document.getElementById('guidedUnpaidRow');
+const sourceRow = document.getElementById('guidedSourceRow');
+const noteInp = document.getElementById('guidedNote');
+const v = document.getElementById('guidedValue');
+unpaidRow.style.display = guidedGroup==='expense' ? 'flex' : 'none';
+noteInp.style.display = NOTE_HIDDEN_GROUPS.includes(guidedGroup) ? 'none' : '';
+noteInp.placeholder = NOTE_REQUIRED_GROUPS.includes(guidedGroup) ? 'Кому — обязательно' : 'Примечание';
+v.dataset.key = selectedCatKey;
+v.focus();
+v.addEventListener('input', e=>{
+if(SOURCE_GROUPS.includes(guidedGroup) && e.target.value !== ''){ sourceRow.style.display = 'flex'; }
+else { sourceRow.style.display = 'none'; }
+});
+v.addEventListener('keydown', e=>{ if(e.key==='Enter') addGuidedValue(); });
+document.getElementById('guidedAddBtn').addEventListener('click', addGuidedValue);
+sourceRow.querySelectorAll('.source-chip').forEach(chip=>{
+chip.addEventListener('click', ()=>{
+const already = chip.classList.contains('active');
+sourceRow.querySelectorAll('.source-chip').forEach(c=>c.classList.remove('active'));
+if(!already){ chip.classList.add('active'); document.getElementById('guidedSource').value = chip.dataset.source; }
+else { document.getElementById('guidedSource').value = ''; }
 });
 });
 }
 
 function selectCategory(key){
-const inputRow = document.getElementById('guidedInputRow');
-const unpaidRow = document.getElementById('guidedUnpaidRow');
-const sourceRow = document.getElementById('guidedSourceRow');
-const noteInp = document.getElementById('guidedNote');
-unpaidRow.style.display = guidedGroup==='expense' ? 'flex' : 'none';
-document.getElementById('guidedUnpaid').checked = false;
-sourceRow.style.display = 'none'; // покажем позже, после ввода суммы
-document.getElementById('guidedSource').value = '';
-sourceRow.querySelectorAll('.source-chip').forEach(c=>c.classList.remove('active'));
-noteInp.value = '';
-noteInp.style.display = NOTE_HIDDEN_GROUPS.includes(guidedGroup) ? 'none' : '';
-noteInp.placeholder = NOTE_REQUIRED_GROUPS.includes(guidedGroup) ? 'Кому — обязательно' : 'Примечание';
-inputRow.style.display = 'flex';
-const v = document.getElementById('guidedValue');
-v.value = '';
-v.dataset.key = key;
-v.dataset.newCategory = '';
-v.focus();
+selectedCatKey = key;
+renderGuidedGroups();
 }
-function resetGuidedInputArea(){
-document.getElementById('guidedInputRow').style.display = 'none';
-document.getElementById('guidedSourceRow').style.display = 'none';
-document.getElementById('guidedUnpaidRow').style.display = 'none';
-}
-document.getElementById('guidedValue').addEventListener('input', e=>{
-const sourceRow = document.getElementById('guidedSourceRow');
-if(SOURCE_GROUPS.includes(guidedGroup) && e.target.value !== ''){
-sourceRow.style.display = 'flex';
-} else {
-sourceRow.style.display = 'none';
-}
-});
 
 let selectedCatKey = null;
-function renderGuidedCats(){ /* оставлено для обратной совместимости — логика теперь в renderGuidedGroups */ }
-document.getElementById('guidedAddBtn').addEventListener('click', addGuidedValue);
-document.getElementById('guidedValue').addEventListener('keydown', e=>{ if(e.key==='Enter') addGuidedValue(); });
 async function addGuidedValue(){
 const inp = document.getElementById('guidedValue');
 const noteInp = document.getElementById('guidedNote');
@@ -1554,12 +1562,7 @@ const noteVal = noteVal0;
 const isUnpaid = document.getElementById('guidedUnpaid').checked;
 const sourceInp = document.getElementById('guidedSource');
 const sourceVal = sourceInp.value; // необязательное поле — не проверяем
-inp.value=''; noteInp.value='';
-document.getElementById('guidedUnpaid').checked = false;
-sourceInp.value = '';
-document.querySelectorAll('#guidedSourceRow .source-chip').forEach(c=>c.classList.remove('active'));
 selectedCatKey = null;
-resetGuidedInputArea();
 renderGuidedGroups();
 if(isUnpaid){
 toast(catName + ' — в долг поставщику');
@@ -1635,7 +1638,6 @@ function renderEntryFields(){
 guidedGroup = null;
 selectedCatKey = null;
 renderGuidedGroups();
-renderGuidedCats();
 renderEnteredList();
 const banner = document.getElementById('entryDateBanner');
 if(banner){
