@@ -440,6 +440,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="mode-btn" data-mode="text">🔒 Текстом</div>
 </div>
 <div id="mode-manual">
+<input type="text" id="catSearchInput" placeholder="🔍 Поиск по статьям — например «молоко»" style="margin-bottom:14px;">
 <div class="group-title">Выбери группу</div>
 <div id="guidedGroups"></div>
 <div class="group-title">Внесено сегодня</div>
@@ -1669,29 +1670,57 @@ return `<div class="acc-input-inline">
 </div>`;
 }
 
+document.getElementById('catSearchInput').addEventListener('input', e=>{
+catSearchQuery = e.target.value;
+renderGuidedGroups();
+});
+let newCatMode = null; // группа, в которой сейчас открыт ввод "своя статья", или null
+let catSearchQuery = '';
+
+function newCatInlineHtml(){
+return `<div class="acc-input-inline">
+<div class="guided-input-row">
+<input type="text" id="newCatNameInput" placeholder="Название статьи, например «Творог»">
+<button class="parse-btn" id="newCatSaveBtn">Сохранить</button>
+</div>
+</div>`;
+}
+
 function renderGuidedGroups(){
 const box = document.getElementById('guidedGroups');
+const q = catSearchQuery.trim().toLowerCase();
 const groups = GROUP_ORDER.filter(g=>Object.keys(COLUMNS).some(k=>COLUMNS[k].group===g));
 box.innerHTML = groups.map(g=>{
-const keys = Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===g);
-const newCatHtml = `<div class="acc-item acc-newcat" data-newcat="1">💡 Не нашли? Добавьте свой вариант</div>`;
+let keys = Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===g);
+keys.sort((a,b)=> COLUMNS[a].name.localeCompare(COLUMNS[b].name, 'ru'));
+if(q) keys = keys.filter(k=> COLUMNS[k].name.toLowerCase().includes(q));
+if(q && !keys.length) return ''; // группа без совпадений при поиске — не показываем
+const newCatBtnHtml = newCatMode===g
+? newCatInlineHtml()
+: `<div class="acc-item acc-newcat" data-newcat="1">💡 Не нашли? Добавьте свой вариант</div>`;
 const itemsHtml = keys.map(k=>{
 let html = `<div class="acc-item ${selectedCatKey===k?'active':''}" data-k="${k}">${COLUMNS[k].name}</div>`;
 if(guidedGroup===g && selectedCatKey===k){ html += inputRowHtml(); }
 return html;
 }).join('');
-return `<div class="acc-group ${g===guidedGroup?'open':''}" data-g="${g}">
+const isOpen = q ? true : g===guidedGroup;
+return `<div class="acc-group ${isOpen?'open':''}" data-g="${g}">
 <div class="acc-group-header"><span>${GROUP_LABELS[g]}</span><span class="chev">▶</span></div>
-<div class="acc-sublist"><div>${newCatHtml}${itemsHtml}</div></div>
+<div class="acc-sublist"><div>${newCatBtnHtml}${itemsHtml}</div></div>
 </div>`;
 }).join('');
+if(q && !box.innerHTML.trim()){
+box.innerHTML = '<div class="empty">Ничего не найдено — попробуй другое слово</div>';
+}
 
 box.querySelectorAll('.acc-group-header').forEach(header=>{
 header.addEventListener('click', ()=>{
+if(catSearchQuery.trim()) return; // при активном поиске группы не сворачиваем вручную
 const grp = header.closest('.acc-group');
 const g = grp.dataset.g;
 if(guidedGroup === g){ guidedGroup = null; } else { guidedGroup = g; }
 selectedCatKey = null;
+newCatMode = null;
 renderGuidedGroups();
 });
 });
@@ -1699,6 +1728,7 @@ box.querySelectorAll('.acc-item[data-k]').forEach(item=>{
 item.addEventListener('click', ()=>{
 selectedCatKey = item.dataset.k;
 guidedGroup = item.closest('.acc-group').dataset.g;
+newCatMode = null;
 renderGuidedGroups();
 setupInlineInput();
 const el = box.querySelector('.acc-item.active');
@@ -1707,15 +1737,28 @@ if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
 });
 box.querySelectorAll('.acc-item[data-newcat]').forEach(item=>{
 item.addEventListener('click', ()=>{
-guidedGroup = item.closest('.acc-group').dataset.g;
-const name = prompt('Название новой статьи, например «Творог»:');
-if(!name || !name.trim()) return;
-const key = addFreeCategory(name.trim(), guidedGroup);
+newCatMode = item.closest('.acc-group').dataset.g;
+renderGuidedGroups();
+const inp = document.getElementById('newCatNameInput');
+if(inp) inp.focus();
+});
+});
+const newCatInp = document.getElementById('newCatNameInput');
+if(newCatInp){
+const saveNewCat = ()=>{
+const name = newCatInp.value.trim();
+if(!name){ toast('Напиши название статьи'); return; }
+const g = newCatMode;
+const key = addFreeCategory(name, g);
+guidedGroup = g;
 selectedCatKey = key;
+newCatMode = null;
 renderGuidedGroups();
 setupInlineInput();
-});
-});
+};
+newCatInp.addEventListener('keydown', e=>{ if(e.key==='Enter') saveNewCat(); });
+document.getElementById('newCatSaveBtn').addEventListener('click', saveNewCat);
+}
 setupInlineInput();
 }
 
@@ -1845,6 +1888,10 @@ renderEnteredList();
 function renderEntryFields(){
 guidedGroup = null;
 selectedCatKey = null;
+newCatMode = null;
+catSearchQuery = '';
+const searchInp = document.getElementById('catSearchInput');
+if(searchInp) searchInp.value = '';
 renderGuidedGroups();
 renderEnteredList();
 const banner = document.getElementById('entryDateBanner');
