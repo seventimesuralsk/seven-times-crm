@@ -7,22 +7,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
---bg:#f4f6f9;
+--bg:#f5f5f7;
 --card:#ffffff;
---ink:#1a2233;
---sub:#64748b;
---line:#e2e8f0;
---line2:#dbe3ee;
---surface2:#eef1f6;
---blue:#1d4ed8;
---blue-d:#1739a6;
---green:#15803d;
---red:#dc2626;
+--ink:#1d1d1f;
+--sub:#6e6e73;
+--line:#e8e8ed;
+--line2:#d2d2d7;
+--surface2:#f5f5f7;
+--blue:#0071e3;
+--blue-d:#0058b0;
+--green:#1fae52;
+--red:#e0483a;
 --orange:#d97706;
---navy:#0f172a;
---navy2:#1e293b;
---radius:8px;
---shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 14px rgba(15,23,42,.06);
+--navy:#ffffff;
+--navy2:#f5f5f7;
+--radius:12px;
+--shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;}
@@ -87,19 +87,19 @@ display:flex;flex-direction:column;min-height:0;
 display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:240;
 }
 .sidebar-backdrop.show{display:block;}
-.side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid var(--navy2);margin-bottom:10px;}
-.side-brand .dot{width:10px;height:10px;border-radius:3px;background:var(--blue);flex-shrink:0;}
-.side-brand b{display:block;font-size:15px;letter-spacing:-.01em;color:#fff;}
-.side-brand span{font-size:11.5px;color:#94a3b8;}
+.side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid var(--line);margin-bottom:10px;}
+.side-brand .dot{width:10px;height:10px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+.side-brand b{display:block;font-size:15px;letter-spacing:-.01em;color:var(--ink);}
+.side-brand span{font-size:11.5px;color:var(--sub);}
 .side-group-title{
-font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;
+font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;
 padding:14px 10px 6px;
 }
 .side-link{
-padding:11px 10px;border-radius:6px;font-size:14.5px;font-weight:500;color:#cbd5e1;
+padding:11px 10px;border-radius:9px;font-size:14.5px;font-weight:500;color:var(--ink);
 cursor:pointer;margin-bottom:2px;
 }
-.side-link:hover{background:var(--navy2);color:#fff;}
+.side-link:hover{background:var(--surface2);}
 .side-link.active{background:var(--blue);color:#fff;font-weight:600;}
 .refresh-side-btn{
 padding:11px 10px;border-radius:9px;font-size:14.5px;font-weight:500;color:var(--ink);
@@ -129,9 +129,9 @@ padding:18px;margin-bottom:12px;box-shadow:var(--shadow);
 .reminder-card .ghost-btn{background:transparent;border-color:currentColor;color:inherit;}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .row > *{flex:1;min-width:120px;}
-.mode-switch{display:flex;gap:6px;margin-bottom:16px;background:var(--surface2);border-radius:11px;padding:4px;}
-.mode-btn{flex:1;padding:9px;border-radius:8px;border:none;background:transparent;
-text-align:center;font-weight:600;font-size:13.5px;color:var(--sub);cursor:pointer;}
+.mode-switch{display:flex;gap:6px;margin-bottom:16px;background:var(--surface2);border-radius:11px;padding:4px;overflow:hidden;}
+.mode-btn{flex:1;padding:9px 6px;border-radius:8px;border:none;background:transparent;
+text-align:center;font-weight:600;font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 .mode-btn.active{background:var(--card);color:var(--ink);font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.1);}
 textarea{width:100%;min-height:140px;resize:vertical;line-height:1.5;}
 .parse-btn, .save-btn, .primary-btn{
@@ -282,6 +282,17 @@ padding:10px 16px;border-radius:8px;background:var(--surface2);border:1.5px soli
 font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;
 }
 .pick-chip.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.acc-group{border-bottom:1px solid var(--line);}
+.acc-group:first-child{border-top:1px solid var(--line);}
+.acc-group-header{display:flex;justify-content:space-between;align-items:center;padding:14px 4px;cursor:pointer;font-weight:600;font-size:15px;color:var(--ink);-webkit-tap-highlight-color:transparent;}
+.acc-group-header .chev{transition:transform .25s ease;color:var(--sub);font-size:13px;}
+.acc-group.open .acc-group-header{color:var(--blue);}
+.acc-group.open .acc-group-header .chev{transform:rotate(90deg);color:var(--blue);}
+.acc-sublist{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1);}
+.acc-group.open .acc-sublist{max-height:800px;}
+.acc-item{padding:12px 4px 12px 16px;font-size:14px;color:var(--ink);cursor:pointer;border-top:1px solid var(--line);-webkit-tap-highlight-color:transparent;}
+.acc-item:active{background:var(--surface2);}
+.acc-item.active{background:var(--blue);color:#fff;font-weight:600;}
 .source-chip.source-cash.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f;}
 .source-chip.source-kaspi.active{background:#e0483a;color:#fff;border-color:#e0483a;}
 .guided-input-row{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
@@ -382,10 +393,31 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 </div>
 
 <div class="view" id="view-entry">
+
+<div class="card" id="entryDateGate" style="text-align:center;">
+<h3 style="margin-bottom:4px;">На какой день заполняем отчёт?</h3>
+<p style="color:var(--sub);font-size:13.5px;margin-top:0;margin-bottom:18px;">Выбери день — дальше откроется сама форма</p>
+<div class="row" style="gap:10px;margin-bottom:14px;">
+<button class="primary-btn" id="gateYesterdayBtn" style="padding:16px 8px;flex-direction:column;height:auto;display:flex;align-items:center;gap:4px;">
+<span style="font-size:15px;">Вчера</span>
+<span id="gateYesterdayHint" style="font-size:11px;font-weight:400;opacity:.85;"></span>
+</button>
+<button class="primary-btn" id="gateTodayBtn" style="padding:16px 8px;flex-direction:column;height:auto;display:flex;align-items:center;gap:4px;">
+<span style="font-size:15px;">Сегодня</span>
+<span id="gateTodayHint" style="font-size:11px;font-weight:400;opacity:.85;"></span>
+</button>
+</div>
+<div class="row" style="gap:8px;">
+<input type="date" id="gateCustomDate" style="flex:1;">
+<button class="ghost-btn" id="gateCustomBtn" style="flex:0 0 auto;">Выбрать</button>
+</div>
+</div>
+
+<div id="entryFormBody" style="display:none;">
 <div class="card" style="background:var(--blue);color:#fff;">
-<div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.04em;">На какой день заполняем отчёт?</div>
-<div id="entryDateBanner" style="font-size:22px;font-weight:700;margin-bottom:10px;"></div>
-<input type="date" id="entryDateInput" style="background:#fff;color:var(--ink);border:none;width:100%;font-size:16px;font-weight:600;">
+<div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.04em;">Заполняем отчёт за</div>
+<div id="entryDateBanner" style="font-size:20px;font-weight:700;margin-bottom:8px;"></div>
+<div class="side-link" id="changeEntryDateBtn" style="background:rgba(255,255,255,.18);color:#fff;display:inline-block;padding:6px 12px;font-size:12.5px;">Сменить день</div>
 </div>
 <div class="card">
 <h3>Отчёт за день</h3>
@@ -395,12 +427,8 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 </div>
 <div id="mode-manual">
 <div class="group-title">Выбери группу</div>
-<div class="chip-row" id="guidedGroups"></div>
-<div id="guidedCatBlock" style="display:none;">
-<div class="group-title" id="guidedGroupTitle"></div>
-<div class="chip-row" id="guidedCats"></div>
-</div>
-<div class="chip-row" id="guidedSourceRow" style="display:none;margin-bottom:12px;">
+<div id="guidedGroups"></div>
+<div class="chip-row" id="guidedSourceRow" style="display:none;margin:14px 0 0;">
 <div class="group-title" style="margin:0 10px 0 0;align-self:center;">Изъято (необязательно):</div>
 <div class="pick-chip source-chip source-cash" data-source="Наличные">Наличные</div>
 <div class="pick-chip source-chip source-kaspi" data-source="Kaspi перевод">Kaspi перевод</div>
@@ -408,7 +436,7 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 <div class="guided-input-row" id="guidedInputRow" style="display:none;">
 <input type="number" inputmode="decimal" id="guidedValue" placeholder="Сумма">
 <input type="hidden" id="guidedSource" value="">
-<input type="text" id="guidedNote" placeholder="Примечание (кому, за что — необязательно)">
+<input type="text" id="guidedNote" placeholder="Примечание" style="display:none;">
 <button class="parse-btn" id="guidedAddBtn">Добавить</button>
 </div>
 <label id="guidedUnpaidRow" style="display:none;align-items:center;gap:8px;margin:-10px 0 16px;font-size:13.5px;color:var(--sub);cursor:pointer;">
@@ -434,6 +462,7 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 </div>
 <div class="footer-actions">
 <button class="save-btn" id="saveBtn">Сохранить отчёт</button>
+</div>
 </div>
 </div>
 </div>
@@ -1078,7 +1107,7 @@ renderReport();
 document.getElementById('pageTitle').textContent = PAGE_TITLES[link.dataset.view] || link.textContent;
 }
 if(link.dataset.view==='fullreport') renderDashboard();
-if(link.dataset.view==='entry') renderEntryFields();
+if(link.dataset.view==='entry') openEntryDateGate();
 if(link.dataset.view==='history') renderHistory();
 if(link.dataset.view==='suppliers') renderSuppliers();
 if(link.dataset.view==='compare') renderCompare();
@@ -1287,6 +1316,8 @@ document.querySelector('.side-link[data-view="entry"]').classList.add('active');
 document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
 document.getElementById('view-entry').classList.add('active');
 document.getElementById('pageTitle').textContent = 'Заполнить отчёт';
+document.getElementById('entryDateGate').style.display = 'none';
+document.getElementById('entryFormBody').style.display = '';
 renderEntryFields();
 });
 });
@@ -1411,108 +1442,99 @@ document.getElementById('guidedSource').value = '';
 }
 });
 });
+const NOTE_HIDDEN_GROUPS = ['agg','term','cash','expense','unpaid'];
+const NOTE_REQUIRED_GROUPS = ['salary_daily','advance','courier','podzp'];
+
 function renderGuidedGroups(){
 const box = document.getElementById('guidedGroups');
-box.innerHTML = GROUP_ORDER.filter(g=>Object.keys(COLUMNS).some(k=>COLUMNS[k].group===g)).map(g=>
-`<div class="pick-chip ${g===guidedGroup?'active':''}" data-g="${g}">${GROUP_LABELS[g]}</div>`
-).join('');
-box.querySelectorAll('.pick-chip').forEach(chip=>{
-chip.addEventListener('click', ()=>{
-guidedGroup = chip.dataset.g;
+const groups = GROUP_ORDER.filter(g=>Object.keys(COLUMNS).some(k=>COLUMNS[k].group===g));
+box.innerHTML = groups.map(g=>{
+const keys = Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===g);
+return `<div class="acc-group ${g===guidedGroup?'open':''}" data-g="${g}">
+<div class="acc-group-header"><span>${GROUP_LABELS[g]}</span><span class="chev">▶</span></div>
+<div class="acc-sublist">${keys.map(k=>`<div class="acc-item ${selectedCatKey===k?'active':''}" data-k="${k}">${COLUMNS[k].name}</div>`).join('')}
+${keys.length>6 ? `<div class="acc-item" data-newcat="1" style="color:var(--blue);">+ Своя статья (если купили что-то новое)</div>` : ''}
+</div>
+</div>`;
+}).join('');
+
+box.querySelectorAll('.acc-group-header').forEach(header=>{
+header.addEventListener('click', ()=>{
+const grp = header.closest('.acc-group');
+const g = grp.dataset.g;
+if(guidedGroup === g){ guidedGroup = null; } else { guidedGroup = g; }
+selectedCatKey = null;
+resetGuidedInputArea();
 renderGuidedGroups();
-renderGuidedCats();
+});
+});
+box.querySelectorAll('.acc-item[data-k]').forEach(item=>{
+item.addEventListener('click', ()=>{
+selectedCatKey = item.dataset.k;
+guidedGroup = item.closest('.acc-group').dataset.g;
+selectCategory(selectedCatKey);
+renderGuidedGroups();
+item.scrollIntoView({behavior:'smooth', block:'center'});
+});
+});
+box.querySelectorAll('.acc-item[data-newcat]').forEach(item=>{
+item.addEventListener('click', ()=>{
+guidedGroup = item.closest('.acc-group').dataset.g;
+const name = prompt('Название новой статьи, например «Творог»:');
+if(!name || !name.trim()) return;
+const key = addFreeCategory(name.trim(), guidedGroup);
+selectedCatKey = key;
+selectCategory(key);
+renderGuidedGroups();
 });
 });
 }
-function renderGuidedCats(){
-const block = document.getElementById('guidedCatBlock');
+
+function selectCategory(key){
 const inputRow = document.getElementById('guidedInputRow');
 const unpaidRow = document.getElementById('guidedUnpaidRow');
 const sourceRow = document.getElementById('guidedSourceRow');
+const noteInp = document.getElementById('guidedNote');
 unpaidRow.style.display = guidedGroup==='expense' ? 'flex' : 'none';
 document.getElementById('guidedUnpaid').checked = false;
-sourceRow.style.display = SOURCE_GROUPS.includes(guidedGroup) ? 'flex' : 'none';
+sourceRow.style.display = 'none'; // покажем позже, после ввода суммы
 document.getElementById('guidedSource').value = '';
 sourceRow.querySelectorAll('.source-chip').forEach(c=>c.classList.remove('active'));
-if(!guidedGroup){ block.style.display='none'; inputRow.style.display='none'; return; }
-block.style.display='';
-document.getElementById('guidedGroupTitle').textContent = GROUP_LABELS[guidedGroup];
-const keys = Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===guidedGroup);
-const box = document.getElementById('guidedCats');
-if(keys.length > 6){
-box.innerHTML = `<select id="guidedCatSelect" style="flex:2;min-width:180px;">
-<option value="">— выбери статью —</option>
-${keys.map(k=>`<option value="${k}">${COLUMNS[k].name}</option>`).join('')}
-<option value="__NEW__">+ Своя статья (если купили что-то новое)</option>
-</select>
-<div id="guidedNewCatRow" style="display:none;flex:2;min-width:200px;">
-<input type="text" id="guidedNewCatName" placeholder="Название новой статьи, например «Творог»">
-</div>`;
-inputRow.style.display='flex';
-inputRow.querySelector('#guidedNote').placeholder = 'Примечание (необязательно)';
-const sel = document.getElementById('guidedCatSelect');
+noteInp.value = '';
+noteInp.style.display = NOTE_HIDDEN_GROUPS.includes(guidedGroup) ? 'none' : '';
+noteInp.placeholder = NOTE_REQUIRED_GROUPS.includes(guidedGroup) ? 'Кому — обязательно' : 'Примечание';
+inputRow.style.display = 'flex';
 const v = document.getElementById('guidedValue');
-sel.addEventListener('change', ()=>{
-const newRow = document.getElementById('guidedNewCatRow');
-if(sel.value === '__NEW__'){
-newRow.style.display = 'flex';
-newRow.querySelector('input').focus();
-v.dataset.key = '';
-v.dataset.newCategory = 'true';
-} else {
-newRow.style.display = 'none';
-v.dataset.key = sel.value;
+v.value = '';
+v.dataset.key = key;
 v.dataset.newCategory = '';
 v.focus();
 }
-});
-v.dataset.key = '';
+function resetGuidedInputArea(){
+document.getElementById('guidedInputRow').style.display = 'none';
+document.getElementById('guidedSourceRow').style.display = 'none';
+document.getElementById('guidedUnpaidRow').style.display = 'none';
+}
+document.getElementById('guidedValue').addEventListener('input', e=>{
+const sourceRow = document.getElementById('guidedSourceRow');
+if(SOURCE_GROUPS.includes(guidedGroup) && e.target.value !== ''){
+sourceRow.style.display = 'flex';
 } else {
-box.innerHTML = keys.map(k=>`<div class="pick-chip" data-k="${k}">${COLUMNS[k].name}</div>`).join('');
-const noteInp = document.getElementById('guidedNote');
-const isPersonGroup = guidedGroup==='advance' || guidedGroup==='courier';
-noteInp.placeholder = isPersonGroup ? 'Кому — обязательно' : 'Примечание (кому, за что — необязательно)';
-box.querySelectorAll('.pick-chip').forEach(chip=>{
-chip.addEventListener('click', ()=>{
-box.querySelectorAll('.pick-chip').forEach(c=>c.classList.remove('active'));
-chip.classList.add('active');
-inputRow.style.display='flex';
-const v = document.getElementById('guidedValue');
-v.value='';
-v.dataset.key = chip.dataset.k;
-v.focus();
-});
-});
-inputRow.style.display='none';
+sourceRow.style.display = 'none';
 }
-}
+});
+
+let selectedCatKey = null;
+function renderGuidedCats(){ /* оставлено для обратной совместимости — логика теперь в renderGuidedGroups */ }
 document.getElementById('guidedAddBtn').addEventListener('click', addGuidedValue);
 document.getElementById('guidedValue').addEventListener('keydown', e=>{ if(e.key==='Enter') addGuidedValue(); });
 async function addGuidedValue(){
 const inp = document.getElementById('guidedValue');
 const noteInp = document.getElementById('guidedNote');
 let key = inp.dataset.key;
-if(inp.dataset.newCategory === 'true'){
-const newNameInp = document.getElementById('guidedNewCatName');
-const newName = newNameInp ? newNameInp.value.trim() : '';
-if(!newName){ toast('Напиши название новой статьи'); return; }
-key = addFreeCategory(newName, guidedGroup);
-inp.dataset.key = key;
-inp.dataset.newCategory = '';
-const newRow = document.getElementById('guidedNewCatRow');
-if(newRow) newRow.style.display = 'none';
-if(newNameInp) newNameInp.value = '';
-const sel = document.getElementById('guidedCatSelect');
-if(sel){
-const opt = document.createElement('option');
-opt.value = key; opt.textContent = newName;
-sel.insertBefore(opt, sel.lastElementChild);
-sel.value = key;
-}
-}
 if(!key || inp.value===''){ toast('Выбери категорию и введи сумму'); return; }
 const noteVal0 = noteInp.value.trim();
-if((guidedGroup==='advance' || guidedGroup==='courier') && !noteVal0){
+if(NOTE_REQUIRED_GROUPS.includes(guidedGroup) && !noteVal0){
 toast('Укажи, кому — без имени нельзя');
 noteInp.focus();
 return;
@@ -1527,13 +1549,9 @@ inp.value=''; noteInp.value='';
 document.getElementById('guidedUnpaid').checked = false;
 sourceInp.value = '';
 document.querySelectorAll('#guidedSourceRow .source-chip').forEach(c=>c.classList.remove('active'));
-const sel = document.getElementById('guidedCatSelect');
-if(sel){
-sel.value=''; inp.dataset.key='';
-} else {
-document.getElementById('guidedInputRow').style.display='none';
-document.querySelectorAll('#guidedCats .pick-chip').forEach(c=>c.classList.remove('active'));
-}
+selectedCatKey = null;
+resetGuidedInputArea();
+renderGuidedGroups();
 if(isUnpaid){
 toast(catName + ' — в долг поставщику');
 await syncAddSupplier(state.branch, catName, valForToast, noteVal, state.date);
@@ -1606,6 +1624,7 @@ renderEnteredList();
 }
 function renderEntryFields(){
 guidedGroup = null;
+selectedCatKey = null;
 renderGuidedGroups();
 renderGuidedCats();
 renderEnteredList();
@@ -1614,28 +1633,50 @@ if(banner){
 const d = new Date(state.date+'T00:00:00');
 const today = new Date().toISOString().slice(0,10);
 const isToday = state.date === today;
-banner.textContent = d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + (isToday ? ' (сегодня)' : ' ⚠️ не сегодня');
-}
-const entryDateInput = document.getElementById('entryDateInput');
-if(entryDateInput){
-entryDateInput.max = new Date().toISOString().slice(0,10);
-entryDateInput.min = '2026-01-01';
-entryDateInput.value = state.date;
+banner.textContent = d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + (isToday ? ' (сегодня)' : '');
 }
 }
-document.getElementById('entryDateInput').addEventListener('change', e=>{
-if(!e.target.value) return;
-const y = Number(e.target.value.slice(0,4));
+
+/* ---------- ВОРОТА: "НА КАКОЙ ДЕНЬ ЗАПОЛНЯЕМ" ---------- */
+function fmtShortDate(dateStr){
+const d = new Date(dateStr+'T00:00:00');
+return d.toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric'});
+}
+function openEntryDateGate(){
+document.getElementById('entryDateGate').style.display = '';
+document.getElementById('entryFormBody').style.display = 'none';
+const today = new Date();
+const y = new Date(today); y.setDate(y.getDate()-1);
+const todayStr = today.toISOString().slice(0,10);
+const yStr = y.toISOString().slice(0,10);
+document.getElementById('gateTodayHint').textContent = fmtShortDate(todayStr);
+document.getElementById('gateYesterdayHint').textContent = fmtShortDate(yStr);
+const custom = document.getElementById('gateCustomDate');
+custom.max = todayStr; custom.min = '2026-01-01'; custom.value = '';
+}
+function confirmEntryDate(dateStr){
+if(!dateStr) return;
+const y = Number(dateStr.slice(0,4));
 const maxY = new Date().getFullYear();
-if(y>maxY || y<2026){
+const todayStr = new Date().toISOString().slice(0,10);
+if(y>maxY || y<2026 || dateStr>todayStr){
 toast('Доступны только даты 2026 года и не позже сегодняшнего дня');
-e.target.value = state.date;
 return;
 }
-state.date = e.target.value;
-dateSelect.value = state.date;
+state.date = dateStr;
+dateSelect.value = dateStr;
+document.getElementById('entryDateGate').style.display = 'none';
+document.getElementById('entryFormBody').style.display = '';
 renderEntryFields();
+}
+document.getElementById('gateTodayBtn').addEventListener('click', ()=> confirmEntryDate(new Date().toISOString().slice(0,10)));
+document.getElementById('gateYesterdayBtn').addEventListener('click', ()=>{
+const y = new Date(); y.setDate(y.getDate()-1);
+confirmEntryDate(y.toISOString().slice(0,10));
 });
+document.getElementById('gateCustomBtn').addEventListener('click', ()=> confirmEntryDate(document.getElementById('gateCustomDate').value));
+document.getElementById('changeEntryDateBtn').addEventListener('click', openEntryDateGate);
+
 /* ---------- ВВОД: ТЕКСТОВЫЙ ПАРСЕР (заточен под реальные "рваные" отчёты кассиров) ---------- */
 function normalize(s){
 let t = s.toLowerCase()
@@ -2495,11 +2536,10 @@ if(link){ link.classList.add('active'); document.getElementById('pageTitle').tex
 document.getElementById('view-'+viewName).classList.add('active');
 currentView = viewName;
 if(viewName==='fullreport') renderDashboard();
-if(viewName==='entry') renderEntryFields();
+if(viewName==='entry') openEntryDateGate();
 await loadFromServer();
 renderAll();
 if(viewName==='fullreport') renderDashboard();
-if(viewName==='entry') renderEntryFields();
 checkYesterdayReminder();
 startAutoSync();
 }
@@ -2560,6 +2600,8 @@ document.querySelector('.side-link[data-view="entry"]').classList.add('active');
 document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
 document.getElementById('view-entry').classList.add('active');
 document.getElementById('pageTitle').textContent = 'Заполнить отчёт';
+document.getElementById('entryDateGate').style.display = 'none';
+document.getElementById('entryFormBody').style.display = '';
 renderEntryFields();
 });
 </script>
