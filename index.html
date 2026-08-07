@@ -1,0 +1,2546 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Seven Times — CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg:#f4f6f9;
+--card:#ffffff;
+--ink:#1a2233;
+--sub:#64748b;
+--line:#e2e8f0;
+--line2:#dbe3ee;
+--surface2:#eef1f6;
+--blue:#1d4ed8;
+--blue-d:#1739a6;
+--green:#15803d;
+--red:#dc2626;
+--orange:#d97706;
+--navy:#0f172a;
+--navy2:#1e293b;
+--radius:8px;
+--shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 14px rgba(15,23,42,.06);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+background:var(--bg);
+color:var(--ink);
+font-family:'Inter',-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;
+-webkit-font-smoothing:antialiased;
+min-height:100vh;
+padding-bottom:80px;
+}
+header{
+position:sticky;top:0;z-index:50;
+background:#ffffff;
+border-bottom:1px solid var(--line);
+box-shadow:0 1px 0 rgba(15,23,42,.02);
+padding:0 14px;
+min-height:56px;
+display:flex;align-items:center;justify-content:space-between;gap:8px;
+flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1;padding:8px 0;}
+.header-icons{display:flex;align-items:center;gap:6px;flex:0 0 auto;order:2;flex-wrap:wrap;justify-content:flex-end;}
+.header-icons select, .header-icons input{font-size:13px;padding:7px 8px;max-width:118px;}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+.brand b{font-size:15px;letter-spacing:-.02em;font-weight:800;}
+.brand span{font-size:11px;color:var(--sub);}
+select, input, textarea, button{
+font-family:inherit;
+font-size:15px;
+border-radius:11px;
+border:1.5px solid transparent;
+background:var(--surface2);
+color:var(--ink);
+padding:10px 12px;
+outline:none;
+}
+select:focus, input:focus, textarea:focus{background:var(--card);border-color:var(--ink);}
+.branch-select{font-weight:700;}
+.container{max-width:680px;margin:0 auto;padding:12px 12px 0;}
+.tabs{
+display:flex;gap:6px;background:var(--surface2);border-radius:11px;padding:4px;margin-bottom:22px;
+overflow-x:auto;
+}
+.tab{
+flex:1;text-align:center;padding:9px 10px;border-radius:10px;font-size:14px;font-weight:600;
+color:var(--sub);cursor:pointer;white-space:nowrap;transition:.15s;
+}
+.tab.active{background:var(--ink);color:var(--bg);}
+/* ---------- МОБИЛЬНЫЙ SIDEBAR (выезжает справа) ---------- */
+.app-shell{display:block;min-height:100vh;}
+.sidebar{
+position:fixed;top:0;right:0;height:100vh;height:100dvh;width:min(320px,82vw);z-index:250;
+background:var(--navy);
+border-left:none;
+padding:16px 10px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
+display:flex;flex-direction:column;min-height:0;
+}
+.sidebar.open{transform:translateX(0);box-shadow:-8px 0 32px rgba(0,0,0,.35);}
+.sidebar-backdrop{
+display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:240;
+}
+.sidebar-backdrop.show{display:block;}
+.side-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid var(--navy2);margin-bottom:10px;}
+.side-brand .dot{width:10px;height:10px;border-radius:3px;background:var(--blue);flex-shrink:0;}
+.side-brand b{display:block;font-size:15px;letter-spacing:-.01em;color:#fff;}
+.side-brand span{font-size:11.5px;color:#94a3b8;}
+.side-group-title{
+font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.05em;
+padding:14px 10px 6px;
+}
+.side-link{
+padding:11px 10px;border-radius:6px;font-size:14.5px;font-weight:500;color:#cbd5e1;
+cursor:pointer;margin-bottom:2px;
+}
+.side-link:hover{background:var(--navy2);color:#fff;}
+.side-link.active{background:var(--blue);color:#fff;font-weight:600;}
+.refresh-side-btn{
+padding:11px 10px;border-radius:9px;font-size:14.5px;font-weight:500;color:var(--ink);
+cursor:pointer;margin-bottom:16px;display:flex;align-items:center;gap:8px;
+background:var(--surface2);
+}
+.refresh-side-btn:active{opacity:.7;}
+.main-area{background:var(--bg);}
+.icon-btn{
+width:36px;height:36px;border-radius:50%;border:none;background:transparent;
+font-size:17px;cursor:pointer;color:var(--ink);flex-shrink:0;display:flex;align-items:center;justify-content:center;
+}
+.icon-btn:active{opacity:.45;}
+.hamburger-bars{width:19px;height:13px;position:relative;display:flex;flex-direction:column;justify-content:space-between;}
+.hamburger-bars span{display:block;width:100%;height:1.6px;background:currentColor;border-radius:2px;transition:transform .2s ease;}
+#hamburgerBtn.open .hamburger-bars span:first-child{transform:translateY(5.7px) rotate(45deg);}
+#hamburgerBtn.open .hamburger-bars span:last-child{transform:translateY(-5.7px) rotate(-45deg);}
+.view{display:none;animation:fade .25s ease;}
+.view.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.card{
+background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+padding:18px;margin-bottom:12px;box-shadow:var(--shadow);
+}
+.card h3{margin:0 0 14px;font-size:15px;letter-spacing:-.01em;font-weight:800;}
+.reminder-card{background:#FFF8E1;border-color:#F0C36D;color:#5c4a1c;}
+.reminder-card .ghost-btn{background:transparent;border-color:currentColor;color:inherit;}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.row > *{flex:1;min-width:120px;}
+.mode-switch{display:flex;gap:6px;margin-bottom:16px;background:var(--surface2);border-radius:11px;padding:4px;}
+.mode-btn{flex:1;padding:9px;border-radius:8px;border:none;background:transparent;
+text-align:center;font-weight:600;font-size:13.5px;color:var(--sub);cursor:pointer;}
+.mode-btn.active{background:var(--card);color:var(--ink);font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+textarea{width:100%;min-height:140px;resize:vertical;line-height:1.5;}
+.parse-btn, .save-btn, .primary-btn{
+background:var(--ink);color:#fff;border:none;font-weight:700;cursor:pointer;padding:12px 18px;
+border-radius:13px;transition:.15s;
+}
+.parse-btn:active, .save-btn:active, .primary-btn:active{transform:scale(.97);opacity:.9;}
+.ghost-btn{background:var(--surface2);color:var(--ink);border:1.5px solid var(--line2);font-weight:600;cursor:pointer;padding:11px 18px;border-radius:13px;}
+.group{margin-bottom:18px;}
+.group-title{font-size:13px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
+.field-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:12.5px;color:var(--sub);}
+.field input{width:100%;}
+.totals-bar{display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;}
+.stat{
+flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:8px;
+padding:16px;box-shadow:var(--shadow);
+}
+.stat .label{font-size:12.5px;color:var(--sub);margin-bottom:6px;}
+.stat .value{font-size:24px;font-weight:700;letter-spacing:-.02em;}
+.stat.pos .value{color:var(--green);}
+.stat.neg .value{color:var(--red);}
+.period-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.chip{padding:8px 14px;border-radius:6px;background:var(--surface2);font-size:13.5px;font-weight:600;
+color:var(--sub);cursor:pointer;border:1px solid var(--line);}
+.chip.active{background:var(--ink);color:#fff;}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.table-scroll table{min-width:420px;}
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);}
+th{color:var(--sub);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.03em;}
+td.num{text-align:right;font-variant-numeric:tabular-nums;}
+tr:last-child td{border-bottom:none;}
+tr.total-row td{font-weight:700;border-top:2px solid var(--ink);}
+.bars{display:flex;flex-direction:column;gap:10px;}
+.bar-row{display:flex;align-items:center;gap:10px;}
+.bar-label{width:150px;font-size:13px;color:var(--sub);flex-shrink:0;}
+.bar-track{flex:1;background:var(--surface2);border-radius:8px;height:22px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#0071e3,#5ac8fa);}
+.bar-val{width:90px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;flex-shrink:0;}
+.branch-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:640px){.branch-compare{grid-template-columns:1fr;}}
+.empty{color:var(--sub);font-size:14px;text-align:center;padding:24px 0;}
+.footer-actions{display:flex;gap:10px;margin-top:6px;justify-content:flex-end;flex-wrap:wrap;}
+.toast{
+position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;
+opacity:0;pointer-events:none;transition:.25s;box-shadow:var(--shadow);z-index:100;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.cat-select-row{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.cat-select-row select{flex:2;min-width:200px;}
+.cat-select-row select.period{flex:1;min-width:140px;}
+@media print{
+header,.tabs,.mode-switch,.footer-actions,.period-chips,.cat-select-row,.no-print,
+.sidebar,.sidebar-backdrop,.hamburger-btn{display:none !important;}
+.app-shell{display:block !important;}
+.main-area{background:#fff !important;}
+body{background:#fff;}
+.card{box-shadow:none;border:none;break-inside:avoid;}
+/* ---- ВЫПИСКА / BANK-STATEMENT СТИЛЬ ---- */
+.statement{
+font-family:Georgia,'Times New Roman',serif;
+color:#111;
+max-width:100%;
+margin:0;
+}
+.statement-head{
+display:flex;justify-content:space-between;align-items:flex-start;
+border-bottom:3px double #111;
+padding-bottom:14px;margin-bottom:14px;
+}
+.statement-head .co-name{font-size:19px;font-weight:700;letter-spacing:.02em;}
+.statement-head .co-sub{font-size:11px;color:#444;margin-top:2px;}
+.statement-head .doc-title{
+text-align:right;font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+font-weight:700;border:1px solid #111;padding:4px 12px;
+}
+.statement-meta{
+display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+border:1px solid #999;margin-bottom:16px;font-size:11.5px;
+}
+.statement-meta div{padding:8px 12px;border-right:1px solid #ccc;}
+.statement-meta div:last-child{border-right:none;}
+.statement-meta b{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:#666;margin-bottom:3px;font-weight:600;}
+.statement-summary{
+display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #111;margin-bottom:18px;
+}
+.statement-summary div{padding:10px 12px;border-right:1px solid #111;text-align:right;}
+.statement-summary div:last-child{border-right:none;}
+.statement-summary b{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#555;font-weight:600;text-align:left;margin-bottom:4px;}
+.statement-summary .amt{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;}
+.statement-branch-title{
+font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+border-bottom:1px solid #111;padding-bottom:5px;margin:20px 0 8px;
+}
+table.statement-table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px;}
+table.statement-table th{
+text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:#555;
+border-bottom:1px solid #111;padding:5px 6px;font-weight:600;
+}
+table.statement-table td{padding:5px 6px;border-bottom:1px solid #ddd;font-variant-numeric:tabular-nums;}
+table.statement-table td.num{text-align:right;}
+table.statement-table tr:nth-child(even) td{background:#fafafa;}
+table.statement-table tr.stmt-total td{border-top:2px solid #111;border-bottom:none;font-weight:700;background:#fff;}
+.statement-footer{
+margin-top:24px;padding-top:10px;border-top:1px solid #999;
+display:flex;justify-content:space-between;font-size:9.5px;color:#666;
+}
+}
+.print-only{display:none;}
+@media print{ .print-only{display:block;} }
+/* ---------- ЭКРАНЫ ВХОДА ---------- */
+.gate{
+position:fixed;inset:0;background:var(--bg);z-index:300;
+display:flex;flex-direction:column;align-items:center;justify-content:center;
+padding:24px;text-align:center;gap:18px;
+}
+.gate h1{font-size:26px;letter-spacing:-.02em;margin:0;}
+.gate p{color:var(--sub);font-size:14px;margin:0;max-width:320px;}
+.pin-dots{display:flex;gap:12px;margin:6px 0;}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--surface2);transition:.15s;}
+.pin-dot.filled{background:var(--blue);}
+.pin-pad{display:grid;grid-template-columns:repeat(3,64px);gap:12px;}
+.pin-key{
+width:64px;height:64px;border-radius:50%;background:var(--card);border:1px solid var(--line);
+font-size:22px;font-weight:600;cursor:pointer;box-shadow:var(--shadow);
+}
+.pin-key:active{background:var(--surface2);}
+.pin-error{color:var(--red);font-size:13px;height:16px;}
+.branch-grid{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.branch-tile{
+background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px 34px;
+font-size:17px;font-weight:700;cursor:pointer;box-shadow:var(--shadow);min-width:160px;
+}
+.branch-tile:active{background:var(--surface2);}
+.welcome-actions{display:flex;flex-direction:column;gap:12px;width:100%;max-width:320px;margin-top:8px;}
+.welcome-actions button{
+padding:16px;border-radius:8px;font-size:16px;font-weight:700;border:none;cursor:pointer;
+}
+.welcome-actions .primary-btn{background:var(--blue);color:#fff;}
+.welcome-actions .ghost-btn{background:var(--card);color:var(--ink);border:1px solid var(--line);}
+/* ---------- ПОШАГОВЫЙ ВВОД ---------- */
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.pick-chip{
+padding:10px 16px;border-radius:8px;background:var(--surface2);border:1.5px solid var(--line2);
+font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;
+}
+.pick-chip.active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.source-chip.source-cash.active{background:#1d1d1f;color:#fff;border-color:#1d1d1f;}
+.source-chip.source-kaspi.active{background:#e0483a;color:#fff;border-color:#e0483a;}
+.guided-input-row{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.guided-input-row input{flex:1 1 160px;font-size:18px;font-weight:600;min-width:120px;}
+.guided-input-row button{flex:0 0 auto;}
+.entry-item{
+display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);
+flex-wrap:wrap;
+}
+.entry-item:last-child{border-bottom:none;}
+.entry-item .ei-name{flex:1;font-size:14px;min-width:140px;}
+.entry-item .ei-note{font-size:12px;color:var(--sub);}
+.entry-item input.ei-val{width:110px;text-align:right;flex:0 0 auto;}
+.entry-item button{flex:0 0 auto;padding:7px 10px;font-size:12.5px;}
+.entry-item .um-name{flex:2 1 200px;min-width:160px;}
+.entry-item .um-val{flex:0 0 100px;width:100px;}
+.entry-item .um-group{flex:0 0 200px;min-width:180px;}
+/* ---------- МОДАЛКА ПОДТВЕРЖДЕНИЯ ---------- */
+.modal-backdrop{
+position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:400;
+display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.modal-box{
+background:var(--card);border-radius:8px;padding:22px;max-width:420px;width:100%;
+max-height:80vh;overflow:auto;box-shadow:var(--shadow);
+}
+.modal-box h3{margin-top:0;}
+.modal-actions{display:flex;gap:10px;margin-top:16px;}
+.modal-actions button{flex:1;padding:12px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="gate" id="gateLogin">
+<h1>Seven Times</h1>
+<p>Введи пароль администратора</p>
+<div class="pin-dots" id="pinDots"></div>
+<div class="pin-error" id="pinError"></div>
+<div class="pin-pad" id="pinPad"></div>
+</div>
+<div class="gate" id="gateBranch" style="display:none;">
+<h1>Выбери филиал</h1>
+<div class="branch-grid" id="branchGrid"></div>
+</div>
+<div class="gate" id="gateWelcome" style="display:none;">
+<h1 id="welcomeTitle">Привет!</h1>
+<p id="welcomeSub"></p>
+<div class="welcome-actions">
+<button class="primary-btn" id="goEntryBtn">Заполнить отчёт</button>
+<button class="ghost-btn" id="goReportsBtn">Посмотреть отчёты</button>
+</div>
+</div>
+<div id="appRoot" style="display:none;">
+<div class="app-shell">
+<nav class="sidebar">
+<div class="side-brand">
+<div class="dot"></div>
+<div><b>Seven Times</b><span>Admin</span></div>
+</div>
+<div class="side-group-title">Общее</div>
+<div class="side-link active" data-view="fullreport" style="background:var(--blue);color:#fff;font-weight:700;">📄 Показать отчёт</div>
+<div class="side-link" data-view="entry">Заполнить отчёт</div>
+<div class="side-link" data-view="suppliers">Поставщики / долги</div>
+<div class="side-group-title">Отчёты</div>
+<div class="side-link" data-view="reports" data-report-group="agg">Агрегаторы</div>
+<div class="side-link" data-view="reports" data-report-group="term">Терминалы</div>
+<div class="side-link" data-view="reports" data-report-group="unpaid">Неоплаченные счета</div>
+<div class="side-link" data-view="reports" data-report-group="expense">Расходы</div>
+<div class="side-link" data-view="reports" data-report-group="advance">Авансы</div>
+<div class="side-link" data-view="reports" data-report-group="salary_daily">Ежедневные зарплаты</div>
+<div class="side-link" data-view="reports" data-report-group="courier">Курьеры</div>
+<div class="side-link" data-view="reports" data-report-group="podzp">Под ЗП</div>
+<div class="side-group-title">Прочее</div>
+<div class="side-link" data-view="settings">Настройки</div>
+<div class="side-link" id="logoutLink" style="color:var(--red);margin-top:10px;">Выйти</div>
+</nav>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+<div class="main-area">
+<header>
+<div class="brand">
+<div style="min-width:0;overflow:hidden;">
+<b id="pageTitle" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Показать отчёт</b>
+<span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Albina</span>
+</div>
+</div>
+<div class="header-icons">
+<select id="branchSelect" class="branch-select" style="width:auto;"></select>
+<input type="date" id="dateSelect" style="width:auto;">
+<button class="icon-btn hamburger-btn" id="hamburgerBtn" title="Меню"><span class="hamburger-bars"><span></span><span></span></span></button>
+</div>
+</header>
+<div class="container">
+<div class="card no-print reminder-card" id="yesterdayReminder" style="display:none;">
+<div id="yesterdayReminderText" style="font-size:14.5px;margin-bottom:10px;"></div>
+<div class="footer-actions" style="justify-content:flex-start;">
+<button class="primary-btn" id="yesterdayReminderFill">Заполнить</button>
+<button class="ghost-btn" id="yesterdayReminderClose">Не сейчас</button>
+</div>
+</div>
+
+<div class="view" id="view-entry">
+<div class="card" style="background:var(--blue);color:#fff;">
+<div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.04em;">Заполняешь отчёт за</div>
+<div id="entryDateBanner" style="font-size:22px;font-weight:700;"></div>
+</div>
+<div class="card">
+<h3>Отчёт за день</h3>
+<div class="mode-switch">
+<div class="mode-btn active" data-mode="manual">По категориям</div>
+<div class="mode-btn" data-mode="text">🔒 Текстом</div>
+</div>
+<div id="mode-manual">
+<div class="group-title">Выбери группу</div>
+<div class="chip-row" id="guidedGroups"></div>
+<div id="guidedCatBlock" style="display:none;">
+<div class="group-title" id="guidedGroupTitle"></div>
+<div class="chip-row" id="guidedCats"></div>
+</div>
+<div class="chip-row" id="guidedSourceRow" style="display:none;margin-bottom:12px;">
+<div class="group-title" style="margin:0 10px 0 0;align-self:center;">Изъято (необязательно):</div>
+<div class="pick-chip source-chip source-cash" data-source="Наличные">Наличные</div>
+<div class="pick-chip source-chip source-kaspi" data-source="Kaspi перевод">Kaspi перевод</div>
+</div>
+<div class="guided-input-row" id="guidedInputRow" style="display:none;">
+<input type="number" inputmode="decimal" id="guidedValue" placeholder="Сумма">
+<input type="hidden" id="guidedSource" value="">
+<input type="text" id="guidedNote" placeholder="Примечание (кому, за что — необязательно)">
+<button class="parse-btn" id="guidedAddBtn">Добавить</button>
+</div>
+<label id="guidedUnpaidRow" style="display:none;align-items:center;gap:8px;margin:-10px 0 16px;font-size:13.5px;color:var(--sub);cursor:pointer;">
+<input type="checkbox" id="guidedUnpaid" style="width:auto;">
+Ещё не оплачено — в долг поставщику (уйдёт в раздел «Поставщики», а не в расходы дня)
+</label>
+<div class="group-title">Внесено сегодня</div>
+<div id="enteredList"><div class="empty">Пока ничего не внесено</div></div>
+</div>
+<div id="mode-text" style="display:none;">
+<textarea id="rawText" placeholder="Вставь текст отчёта кассира, например:&#10;Kaspi QR 30000&#10;Наличные 15000&#10;Под зп 15000&#10;Сироп 4500"></textarea>
+<div class="footer-actions">
+<button class="parse-btn" id="parseBtn">Распознать</button>
+</div>
+</div>
+<div class="card" id="parsePreview" style="display:none;margin-top:14px;">
+<h3>Проверь перед сохранением</h3>
+<div id="parsePreviewFields"></div>
+<div class="footer-actions">
+<button class="ghost-btn" id="unmatchedBtn" style="display:none;">Показать нераспознанное</button>
+<button class="parse-btn" id="applyTextBtn">Сохранить отчёт</button>
+</div>
+</div>
+<div class="footer-actions">
+<button class="save-btn" id="saveBtn">Сохранить отчёт</button>
+</div>
+</div>
+</div>
+
+
+<div class="view" id="view-suppliers">
+<div class="card">
+<h3>Новая накладная</h3>
+<div class="row">
+<div class="field"><label>Поставщик / позиция</label>
+<select id="supNameSelect">
+<option value="">— выбери —</option>
+</select>
+<input type="text" id="supName" placeholder="Свой вариант" style="display:none;margin-top:6px;">
+</div>
+<div class="field"><label>Сумма</label><input type="number" id="supAmount" placeholder="0"></div>
+<div class="field"><label>Дата</label><input type="date" id="supDate"></div>
+<div class="field"><label>Примечание</label><input type="text" id="supNote" placeholder="Например: за молочку"></div>
+<button class="primary-btn" id="supAddBtn" style="flex:0;align-self:flex-end;">Добавить накладную</button>
+</div>
+</div>
+<div class="card">
+<h3>Неоплаченные — <span id="supUnpaidTotal"></span></h3>
+<div id="supUnpaidList"></div>
+</div>
+<div class="card">
+<h3>Оплаченные (история)</h3>
+<div id="supPaidList"></div>
+</div>
+</div>
+
+<div class="view" id="view-history">
+<div class="card">
+<h3>Сохранённые дни — <span id="historyBranchLabel"></span></h3>
+<div id="historyList"></div>
+</div>
+</div>
+
+<div class="view active" id="view-fullreport">
+<div class="period-chips" id="periodChips">
+<div class="chip" data-period="yesterday">Вчера</div>
+<div class="chip active" data-period="day">Сегодня</div>
+<div class="chip" data-period="7">7 дней</div>
+<div class="chip" data-period="15">15 дней</div>
+<div class="chip" data-period="daily">По дням</div>
+<div class="chip" data-period="month">По месяцам</div>
+<div class="chip" data-period="range">Период</div>
+</div>
+<div id="periodExtra" style="margin-bottom:16px;"></div>
+<div id="summaryCards">
+<div class="totals-bar" id="totalsBar"></div>
+<div class="card">
+<h3>Агрегаторы</h3>
+<div class="bars" id="aggBars"></div>
+</div>
+<div class="card">
+<h3>Терминалы</h3>
+<div class="bars" id="termBars"></div>
+</div>
+<div class="card">
+<h3>Наличные</h3>
+<div class="bars" id="cashBars"></div>
+</div>
+<div class="card">
+<h3>Неоплаченные счета</h3>
+<div class="bars" id="unpaidBars"></div>
+</div>
+<div class="card">
+<h3>Расходы — детально</h3>
+<div class="bars" id="purchaseBars"></div>
+</div>
+<div class="card">
+<h3>Зарплата — ежедневные</h3>
+<div class="bars" id="salaryDailyBars"></div>
+</div>
+<div class="card">
+<h3>Авансы — кто сколько взял</h3>
+<div class="bars" id="advanceBars"></div>
+</div>
+<div class="card">
+<h3>Курьеры — кто сколько взял</h3>
+<div class="bars" id="courierBars"></div>
+</div>
+<div class="card">
+<h3>Под ЗП — кто сколько взял</h3>
+<div class="bars" id="podzpBars"></div>
+</div>
+<div class="card">
+<h3>Остатки на конец выбранной даты</h3>
+<div class="totals-bar" id="balanceBar"></div>
+</div>
+<div class="card">
+<h3>Поставщики — неоплаченные накладные</h3>
+<div class="bars" id="supplierDebtBars"></div>
+</div>
+</div>
+<div class="card" id="dailyTrendCard" style="display:none;margin-top:16px;">
+<h3>Продажи по дням</h3>
+<div class="bars" id="trendBars"></div>
+</div>
+<div class="footer-actions no-print">
+<button class="ghost-btn" id="frPdfBtn">Скачать PDF</button>
+</div>
+</div>
+
+<div class="view" id="view-reports">
+<div class="cat-select-row">
+<select id="reportGroup" style="display:none;">
+<option value="all">Всё</option>
+<option value="agg">Агрегаторы</option>
+<option value="term">Терминалы</option>
+<option value="cash">Наличные</option>
+<option value="unpaid">Неоплаченные счета</option>
+<option value="expense">Расходы (закуп+прочее)</option>
+<option value="salary_daily">Зарплата — ежедневные</option>
+<option value="advance">Авансы</option>
+<option value="courier">Курьеры</option>
+<option value="podzp">Под ЗП</option>
+</select>
+<select id="reportCategory" style="display:none;"><option value="">Все категории группы</option></select>
+<select class="period" id="reportPeriod">
+<option value="day">Сегодня</option>
+<option value="7">7 дней</option>
+<option value="30">30 дней</option>
+<option value="month">Месяц</option>
+<option value="year">Год</option>
+</select>
+<select id="reportView" style="display:none;">
+<option value="chart" selected>Графический отчёт</option>
+</select>
+</div>
+<div class="card">
+<h3 id="reportTitle">Отчёт</h3>
+<div id="reportBody"></div>
+<div class="footer-actions">
+<button class="ghost-btn" id="exportPdf">Скачать PDF</button>
+</div>
+</div>
+</div>
+
+<div class="view" id="view-compare">
+<div class="cat-select-row">
+<select class="period" id="comparePeriod">
+<option value="day">Сегодня</option>
+<option value="7">7 дней</option>
+<option value="30" selected>30 дней</option>
+<option value="month">Месяц</option>
+<option value="year">Год</option>
+</select>
+</div>
+<div class="branch-compare" id="compareCards"></div>
+<div class="card">
+<h3>Разница между филиалами</h3>
+<div id="compareDiff"></div>
+</div>
+</div>
+
+<div class="view" id="view-settings">
+<div class="card">
+<h3>Доступ (главный админ)</h3>
+<div class="row">
+<div class="field"><label>Имя админа (приветствие)</label><input type="text" id="settingsAdminName"></div>
+<div class="field"><label>PIN-код входа</label><input type="text" id="settingsPin" value="2767" disabled></div>
+</div>
+<div class="row" style="margin-top:12px;">
+<div class="field"><label>Аватар</label>
+<select id="settingsAvatar"></select>
+</div>
+<div class="field"><label>Телефон</label><input type="text" id="settingsPhone" placeholder="+7 700 000 00 00"></div>
+<div class="field"><label>Почта</label><input type="email" id="settingsEmail" placeholder="admin@example.com"></div>
+<button class="primary-btn" id="saveAccessBtn" style="flex:0;align-self:flex-end;">Сохранить</button>
+</div>
+<p style="color:var(--sub);font-size:12.5px;margin-top:10px;">Почта/телефон — на будущее (для связи), реальную смс-рассылку для сброса пароля сайт не отправляет — если забудешь пароль, зайди с другого устройства, где сессия уже открыта, и смени его здесь же.</p>
+</div>
+<div class="card">
+<h3>Кассиры</h3>
+<p style="color:var(--sub);font-size:13px;margin-top:0;">Заведи отдельный вход для каждого кассира — со своим PIN и ограниченными правами. Ты (главный админ) видишь всё всегда.</p>
+<div class="row">
+<input type="text" id="newCashierName" placeholder="Имя кассира">
+<input type="text" id="newCashierPin" placeholder="PIN (4 цифры)" maxlength="4" inputmode="numeric" style="max-width:120px;">
+</div>
+<div class="chip-row" id="newCashierPerms" style="margin-top:10px;">
+<label class="pick-chip"><input type="checkbox" value="entry" checked style="margin-right:6px;">Заполнять отчёт</label>
+<label class="pick-chip"><input type="checkbox" value="reports" checked style="margin-right:6px;">Смотреть отчёты</label>
+<label class="pick-chip"><input type="checkbox" value="suppliers" style="margin-right:6px;">Поставщики</label>
+</div>
+<div class="footer-actions" style="justify-content:flex-start;margin-top:10px;">
+<button class="primary-btn" id="addCashierBtn">Добавить кассира</button>
+</div>
+<div id="cashierList" style="margin-top:16px;"></div>
+</div>
+<div class="card">
+<h3>Филиалы</h3>
+<div class="row">
+<input type="text" id="newBranchName" placeholder="Название филиала">
+<button class="primary-btn" id="addBranchBtn" style="flex:0;">Добавить</button>
+</div>
+<div id="branchList" style="margin-top:12px;"></div>
+<p style="color:var(--sub);font-size:12.5px;margin-top:10px;">Название филиала должно совпадать с названием листа в Google Таблице — иначе сайт не сможет туда писать.</p>
+</div>
+<div class="card">
+<h3>Категории</h3>
+<p style="color:var(--sub);font-size:14px;margin-top:0;">Список категорий и формулы расчёта зафиксированы по образцу твоей таблицы отчётов. Изменить их можно только в коде — если появится новая статья расходов, скажи, добавлю.</p>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+</div>
+</div>
+</div>
+<div class="modal-backdrop" id="confirmModal" style="display:none;">
+<div class="modal-box">
+<h3>Всё верно?</h3>
+<div id="confirmList"></div>
+<div class="modal-actions">
+<button class="ghost-btn" id="confirmNo">Нет, поправить</button>
+<button class="primary-btn" id="confirmYes">Да, сохранить</button>
+</div>
+</div>
+</div>
+<div class="modal-backdrop" id="payModal" style="display:none;">
+<div class="modal-box">
+<h3>Оплата накладной</h3>
+<div id="payWho" style="color:var(--sub);font-size:14px;margin-bottom:12px;"></div>
+<div class="field" style="margin-bottom:10px;"><label>Сумма</label><input type="number" id="payAmount"></div>
+<div class="field" style="margin-bottom:10px;"><label>Способ оплаты</label>
+<select id="payMethod">
+<option>Перевод</option>
+<option>Наличные</option>
+<option>Kaspi QR</option>
+<option>Halyk Bank</option>
+</select>
+</div>
+<div class="field"><label>Дата оплаты</label><input type="date" id="payDate"></div>
+<div class="modal-actions">
+<button class="ghost-btn" id="payNo">Отмена</button>
+<button class="primary-btn" id="payYes">Оплачено</button>
+</div>
+</div>
+</div>
+<script>
+/* ---------- ДАННЫЕ / КОНФИГ ---------- */
+const STORAGE_KEY = 'st_crm_data_v1';
+const CONFIG_KEY  = 'st_crm_config_v2';
+const COLUMNS = {
+YA:{name:'Яндекс Еда', group:'agg'},
+WO:{name:'Wolt', group:'agg'},
+CH:{name:'ChocoFood', group:'agg'},
+HB:{name:'Halyk Bank', group:'term'},
+KQ:{name:'Kaspi QR', group:'term'},
+BCC:{name:'BCC', group:'term'},
+KP:{name:'Kaspi перевод', group:'term'},
+NAL:{name:'Наличные', group:'cash'},
+KA:{name:'Кадырбек Аскарович', group:'unpaid'},
+MI:{name:'Миша', group:'unpaid'},
+ZA:{name:'Замир ага', group:'unpaid'},
+EX_OVOSHI:{name:'Овощи / марина', group:'expense'},
+EX_ALTYN:{name:'Алтын алма', group:'expense'},
+EX_PASTA:{name:'Паста', group:'expense'},
+EX_SIROP:{name:'Сироп', group:'expense'},
+EX_DANKING:{name:'Дан Кинг', group:'expense'},
+EX_YAGODY:{name:'Ягоды', group:'expense'},
+EX_ZAPAD:{name:'Запад', group:'expense'},
+EX_MOLOKO:{name:'Молоко', group:'expense'},
+EX_PELMENI:{name:'Пельмени', group:'expense'},
+EX_OBORUD:{name:'Оборудование', group:'expense'},
+EX_NORI:{name:'Нори', group:'expense'},
+EX_FARSH:{name:'Фарш', group:'expense'},
+EX_SEMGA:{name:'Семга', group:'expense'},
+EX_MYASO:{name:'Мясо', group:'expense'},
+EX_KRYLYA:{name:'Крылья', group:'expense'},
+EX_FILE:{name:'Филе', group:'expense'},
+EX_RUBASHKA:{name:'Рубашка', group:'expense'},
+EX_SALYAMI:{name:'Салями', group:'expense'},
+EX_MAYONEZ:{name:'Майонез', group:'expense'},
+EX_TORT:{name:'Торт', group:'expense'},
+EX_MAKARONS:{name:'Макаронс', group:'expense'},
+EX_RAMEN:{name:'Рамен', group:'expense'},
+EX_RIS:{name:'Рис', group:'expense'},
+EX_LAVASH:{name:'Лаваш', group:'expense'},
+EX_MIKROZEL:{name:'Микрозелень', group:'expense'},
+EX_CHEBUPELI:{name:'Чебупели', group:'expense'},
+EX_LAGMAN:{name:'Лагман тесто', group:'expense'},
+EX_MANTY:{name:'Манты', group:'expense'},
+EX_HOZTOVAR:{name:'Хозтовар/одноразовая посуда', group:'expense'},
+EX_MAGAZIN:{name:'Ближайший магазин', group:'expense'},
+EX_INVENTAR:{name:'Инвентарь', group:'expense'},
+EX_POSUDA:{name:'Посуда', group:'expense'},
+EX_REKLAMA:{name:'Реклама/таргет', group:'expense'},
+EX_RAZVOZKA:{name:'Развозка такси', group:'expense'},
+SAL_DAILY:{name:'Ежедневные з/п', group:'salary_daily'},
+SAL_ADVANCE:{name:'Аванс', group:'advance'},
+SAL_COURIER:{name:'Курьер', group:'courier'},
+SAL_PODZP:{name:'Под ЗП', group:'podzp'},
+};
+const GROUP_LABELS = {
+agg:'Агрегаторы', term:'Терминалы', cash:'Наличные', unpaid:'Неоплаченные счета',
+expense:'Расходы (закуп и прочее)', salary_daily:'Зарплата — ежедневные',
+advance:'Авансы (кто сколько взял)', courier:'Курьеры (кто сколько взял)',
+podzp:'Под ЗП (кто сколько взял)'
+};
+const GROUP_ORDER = ['agg','term','cash','unpaid','expense','salary_daily','advance','courier','podzp'];
+const SALES_GROUPS = ['agg','term','cash','unpaid'];
+const SALARY_GROUPS = ['salary_daily','advance','courier','podzp'];
+const SOURCE_GROUPS = ['expense','salary_daily','advance','courier','podzp','unpaid']; // тут можно отметить "Изъято" (необязательно)
+const SOURCES = ['Наличные','Kaspi перевод'];
+const SALE_COLUMNS_SITE = ['YA','WO','CH','HB','KQ','BCC','KP','NAL','KA','MI','ZA']; // порядок как в Apps Script / таблице
+const DEFAULT_CONFIG = { branches: ['Самал','Центр'], pin: '2767', adminName: 'Альбина', cashiers: [] };
+let CONFIG = Object.assign({}, DEFAULT_CONFIG); // ничего не берём из браузера — только с сервера (см. loadConfigFromServer)
+CONFIG.cashiers = CONFIG.cashiers || [];
+let DATA   = {}; // { branch: { 'YYYY-MM-DD': [{id,val,note,_row?}] } } — грузится с сервера, см. loadFromServer()
+function saveConfig(){
+syncConfigToServer();
+}
+let configSyncDebounce = null;
+function syncConfigToServer(){
+clearTimeout(configSyncDebounce);
+configSyncDebounce = setTimeout(()=>{
+apiPost('set_config', { fields: {
+pin: CONFIG.pin, adminName: CONFIG.adminName, adminAvatar: CONFIG.adminAvatar,
+adminPhone: CONFIG.adminPhone, adminEmail: CONFIG.adminEmail,
+branches: CONFIG.branches, cashiers: CONFIG.cashiers, freeColumns: CONFIG.freeColumns
+}}).catch(err=> console.error('Не удалось сохранить настройки на сервере', err));
+}, 400);
+}
+async function loadConfigFromServer(){
+try{
+const data = await apiGetAll();
+const cfg = data.config || {};
+if(cfg.pin) CONFIG.pin = cfg.pin;
+if(cfg.adminName) CONFIG.adminName = cfg.adminName;
+if(cfg.adminAvatar) CONFIG.adminAvatar = cfg.adminAvatar;
+if(cfg.adminPhone!==undefined) CONFIG.adminPhone = cfg.adminPhone;
+if(cfg.adminEmail!==undefined) CONFIG.adminEmail = cfg.adminEmail;
+if(cfg.branches){ try{ CONFIG.branches = JSON.parse(cfg.branches); }catch(e){} }
+if(cfg.cashiers){ try{ CONFIG.cashiers = JSON.parse(cfg.cashiers); }catch(e){} }
+if(cfg.freeColumns){ try{ CONFIG.freeColumns = JSON.parse(cfg.freeColumns); (CONFIG.freeColumns||[]).forEach(fc=>{ COLUMNS[fc.key] = {name:fc.name, group:fc.group}; }); }catch(e){} }
+}catch(err){
+console.error('Не удалось загрузить настройки с сервера — используем локальные', err);
+}
+}
+function saveData(){ /* больше не нужен — данные живут в Google Таблице, см. syncAddEntry/syncEditEntry/syncDeleteEntry */ }
+const SUPPLIERS_KEY = 'st_crm_suppliers_v1';
+let SUPPLIERS = {}; // { branch: [{id,name,amount,note,date,paid,paidDate,paidMethod,_row}] } — с сервера
+function saveSuppliers(){ /* см. syncSupplier* — пишем сразу на сервер */ }
+/* ================= API: Google Apps Script ================= */
+const CRM_API_URL = 'https://script.google.com/macros/s/AKfycbw0L2OZJZFTWvEoN9I2YIqxRa0jvaMnQavpmsCvmMfwfuLt3JdYKMs8MXw2RbkPXJrt/exec';
+const LOG_TYPE_OF_GROUP = { expense:'expense', salary_daily:'salary_daily', advance:'advance', courier:'courier', podzp:'podzp' };
+async function apiGetAll(){
+const res = await fetch(CRM_API_URL + '?action=all&_=' + Date.now(), { cache: 'no-store' });
+return res.json();
+}
+async function apiPost(action, payload){
+const res = await fetch(CRM_API_URL, {
+method:'POST',
+cache: 'no-store',
+body: JSON.stringify(Object.assign({action}, payload))
+});
+return res.json();
+}
+let serverSyncing = false;
+let pendingWrites = 0; // сколько записей сейчас дописываются на сервер (ещё не завершились)
+async function loadFromServer(silent){
+serverSyncing = true;
+if(!silent) toast('Загрузка данных…');
+try{
+const data = await apiGetAll();
+DATA = {};
+CONFIG.branches.forEach(b=>{ DATA[b] = {}; });
+Object.keys(data.branches||{}).forEach(branch=>{
+DATA[branch] = DATA[branch] || {};
+data.branches[branch].forEach(row=>{
+const dateStr = row.date;
+DATA[branch][dateStr] = DATA[branch][dateStr] || {};
+SALE_COLUMNS_SITE.forEach(key=>{
+const v = Number(row[key]||0);
+if(v!==0) DATA[branch][dateStr][key] = [{ id:'srv_sale_'+branch+dateStr+key, val:v, note:'', _serverSale:true }];
+});
+});
+});
+const logs = data.logs || {};
+Object.keys(logs).forEach(logType=>{
+(logs[logType]||[]).forEach(entry=>{
+const branch = entry.branch;
+if(!DATA[branch]) DATA[branch] = {};
+DATA[branch][entry.date] = DATA[branch][entry.date] || {};
+let key;
+if(logType==='expense'){
+const found = Object.entries(COLUMNS).find(([k,c])=> c.group==='expense' && c.name===entry.note);
+key = found ? found[0] : addFreeCategory(entry.note || 'Расход', 'expense');
+} else if(logType==='salary_daily'){ key='SAL_DAILY'; }
+else if(logType==='advance'){ key='SAL_ADVANCE'; }
+else if(logType==='courier'){ key='SAL_COURIER'; }
+else if(logType==='podzp'){ key='SAL_PODZP'; }
+if(!key) return;
+DATA[branch][entry.date][key] = DATA[branch][entry.date][key] || [];
+DATA[branch][entry.date][key].push({ id:'srv_log_'+entry.row, val:Number(entry.amount)||0, note: logType==='expense' ? '' : (entry.note||''), source: entry.source||'', _row:entry.row, _logType:logType });
+});
+});
+SUPPLIERS = {};
+CONFIG.branches.forEach(b=>{ SUPPLIERS[b]=[]; });
+(data.suppliers||[]).forEach(s=>{
+SUPPLIERS[s.branch] = SUPPLIERS[s.branch] || [];
+SUPPLIERS[s.branch].push({
+id:'srv_sup_'+s.row, name:s.name, amount:Number(s.amount)||0, date:s.date, note:s.note||'',
+paid: !!s.paid, paidDate: s.paidDate||'', paidMethod: s.paidMethod||'', _row: s.row
+});
+});
+if(!silent) toast('Данные загружены');
+const syncEl = document.getElementById('lastSyncTime');
+if(syncEl) syncEl.textContent = 'обновлено ' + new Date().toLocaleTimeString('ru-RU');
+} catch(err){
+if(!silent) toast('Не удалось загрузить с сервера — работаем локально');
+console.error(err);
+} finally {
+serverSyncing = false;
+}
+}
+/* ---------- ПОСТАВЩИКИ / ДОЛГИ (свободная форма: сумма + примечание) ---------- */
+function branchSuppliers(branch){ SUPPLIERS[branch] = SUPPLIERS[branch] || []; return SUPPLIERS[branch]; }
+function addSupplier(branch, name, amount, note, date){
+branchSuppliers(branch).push({ id:'s'+(entryIdSeq++)+'_'+Date.now(), name, amount:Number(amount)||0, note:note||'', date: date||state.date, paid:false });
+saveSuppliers();
+}
+function supplierTotalUnpaid(branch){
+return branchSuppliers(branch).filter(s=>!s.paid).reduce((s,x)=>s+Number(x.amount||0),0);
+}
+/* ---------- ПОСТАВЩИКИ: СИНХРОНИЗАЦИЯ С СЕРВЕРОМ ---------- */
+async function syncAddSupplier(branch, name, amount, note, date){
+const list = branchSuppliers(branch);
+const tempId = 'sup_pending_'+Date.now();
+const local = { id:tempId, name, amount:Number(amount)||0, note:note||'', date: date||state.date, paid:false };
+list.push(local);
+renderSuppliers();
+pendingWrites++;
+try{
+const res = await apiPost('add_supplier', { branch, name, amount, note, date: date||state.date });
+local._row = res.row;
+local.id = 'srv_sup_'+res.row;
+renderSuppliers();
+}catch(err){ toast('Не сохранилось на сервере'); console.error(err); }
+finally{ pendingWrites--; }
+}
+async function syncUpdateSupplier(s, fields){
+Object.assign(s, fields);
+if(!s._row) return;
+pendingWrites++;
+try{ await apiPost('update_supplier', { row: s._row, fields }); }
+catch(err){ toast('Не сохранилось на сервере'); console.error(err); }
+finally{ pendingWrites--; }
+}
+async function syncDeleteSupplier(branch, s){
+SUPPLIERS[branch] = branchSuppliers(branch).filter(x=>x.id!==s.id);
+renderSuppliers();
+if(!s._row) return;
+pendingWrites++;
+try{ await apiPost('delete_supplier', { row: s._row }); }
+catch(err){ toast('Не сохранилось на сервере'); console.error(err); }
+finally{ pendingWrites--; }
+}
+/* ---------- ПОСТАВЩИКИ: UI ---------- */
+document.getElementById('supDate').value = new Date().toISOString().slice(0,10);
+function populateSupNameSelect(){
+const sel = document.getElementById('supNameSelect');
+const items = Object.values(COLUMNS)
+.filter(c=> c.group==='expense')
+.map(c=>c.name);
+const uniq = [...new Set(items)];
+sel.innerHTML = '<option value="">— выбери —</option>' +
+uniq.map(n=>`<option value="${n}">${n}</option>`).join('') +
+'<option value="__OTHER__">Другое (свой вариант)</option>';
+}
+populateSupNameSelect();
+document.getElementById('supNameSelect').addEventListener('change', function(){
+const other = document.getElementById('supName');
+if(this.value === '__OTHER__'){ other.style.display=''; other.value=''; other.focus(); }
+else { other.style.display='none'; other.value=''; }
+});
+document.getElementById('supAddBtn').addEventListener('click', async ()=>{
+const sel = document.getElementById('supNameSelect').value;
+const other = document.getElementById('supName').value.trim();
+const name = sel==='__OTHER__' ? other : sel;
+const amount = document.getElementById('supAmount').value;
+const date = document.getElementById('supDate').value || state.date;
+const note = document.getElementById('supNote').value.trim();
+if(!name || !amount){ toast('Выбери поставщика/позицию и укажи сумму'); return; }
+document.getElementById('supNameSelect').value='';
+document.getElementById('supName').value=''; document.getElementById('supName').style.display='none';
+document.getElementById('supAmount').value='';
+document.getElementById('supNote').value='';
+toast('Накладная добавлена');
+await syncAddSupplier(state.branch, name, amount, note, date);
+});
+let payingId = null;
+function renderSuppliers(){
+populateSupNameSelect();
+const list = branchSuppliers(state.branch);
+const unpaid = list.filter(s=>!s.paid).sort((a,b)=> a.date.localeCompare(b.date));
+const paid = list.filter(s=>s.paid).sort((a,b)=> (b.paidDate||'').localeCompare(a.paidDate||''));
+document.getElementById('supUnpaidTotal').textContent = fmt(unpaid.reduce((s,x)=>s+x.amount,0));
+const unpaidBox = document.getElementById('supUnpaidList');
+unpaidBox.innerHTML = unpaid.length ? unpaid.map(s=>`
+<div class="entry-item" data-id="${s.id}">
+<div class="ei-name"><b class="sup-name-edit" contenteditable="true">${s.name}</b> —
+<input type="date" class="sup-date-edit" value="${s.date}" style="width:130px;display:inline-block;">
+<input type="text" class="sup-note-edit" value="${s.note||''}" placeholder="примечание" style="width:120px;">
+</div>
+<input type="number" class="sup-amount-edit" value="${s.amount}" style="width:100px;text-align:right;">
+<button class="primary-btn sup-pay-btn" style="flex:0;">Оплатить</button>
+<button class="ghost-btn sup-del-btn" style="flex:0;">Удалить</button>
+</div>`).join('') : '<div class="empty">Нет неоплаченных накладных</div>';
+unpaidBox.querySelectorAll('.entry-item').forEach(row=>{
+const id = row.dataset.id;
+const s = list.find(x=>x.id===id);
+row.querySelector('.sup-name-edit').addEventListener('blur', e=>{ syncUpdateSupplier(s, {name: e.target.textContent.trim()||s.name}); });
+row.querySelector('.sup-date-edit').addEventListener('change', e=>{ syncUpdateSupplier(s, {date: e.target.value}); renderSuppliers(); });
+row.querySelector('.sup-note-edit').addEventListener('change', e=>{ syncUpdateSupplier(s, {note: e.target.value}); });
+row.querySelector('.sup-amount-edit').addEventListener('change', e=>{
+syncUpdateSupplier(s, {amount: Number(e.target.value)||0});
+document.getElementById('supUnpaidTotal').textContent = fmt(branchSuppliers(state.branch).filter(x=>!x.paid).reduce((a,x)=>a+x.amount,0));
+});
+row.querySelector('.sup-pay-btn').addEventListener('click', ()=> openPayModal(id));
+row.querySelector('.sup-del-btn').addEventListener('click', ()=>{
+if(!confirm(`Удалить накладную "${s.name}" на ${fmt(s.amount)}?`)) return;
+syncDeleteSupplier(state.branch, s);
+toast('Удалено');
+});
+});
+const paidBox = document.getElementById('supPaidList');
+paidBox.innerHTML = paid.length ? paid.map(s=>`
+<div class="entry-item" data-id="${s.id}">
+<div class="ei-name"><b>${s.name}</b> — накладная ${s.date} · оплачено ${s.paidDate||''} · ${s.paidMethod||''}${s.note?`<div class="ei-note">${s.note}</div>`:''}</div>
+<div style="font-weight:700;min-width:110px;text-align:right;">${fmt(s.amount)}</div>
+<button class="ghost-btn sup-unpay-btn" style="flex:0;">Вернуть в неоплаченные</button>
+<button class="ghost-btn sup-del-btn" style="flex:0;">Удалить</button>
+</div>`).join('') : '<div class="empty">Пока нет оплаченных накладных</div>';
+paidBox.querySelectorAll('.entry-item').forEach(row=>{
+const id = row.dataset.id;
+const s = list.find(x=>x.id===id);
+row.querySelector('.sup-unpay-btn').addEventListener('click', ()=>{
+syncUpdateSupplier(s, {paid:false, paidDate:'', paidMethod:''});
+renderSuppliers();
+toast('Возвращено в неоплаченные');
+});
+row.querySelector('.sup-del-btn').addEventListener('click', ()=>{
+if(!confirm(`Удалить накладную "${s.name}" на ${fmt(s.amount)}?`)) return;
+syncDeleteSupplier(state.branch, s);
+toast('Удалено');
+});
+});
+}
+function openPayModal(id){
+payingId = id;
+const s = branchSuppliers(state.branch).find(x=>x.id===id);
+if(!s) return;
+document.getElementById('payWho').textContent = `${s.name} · накладная от ${s.date}${s.note?' · '+s.note:''}`;
+document.getElementById('payAmount').value = s.amount;
+document.getElementById('payDate').value = new Date().toISOString().slice(0,10);
+document.getElementById('payMethod').value = 'Перевод';
+document.getElementById('payModal').style.display='flex';
+}
+document.getElementById('payNo').addEventListener('click', ()=>{ document.getElementById('payModal').style.display='none'; });
+document.getElementById('payYes').addEventListener('click', async ()=>{
+const s = branchSuppliers(state.branch).find(x=>x.id===payingId);
+if(!s) return;
+const fields = {
+paid: true,
+paidDate: document.getElementById('payDate').value,
+paidMethod: document.getElementById('payMethod').value,
+amount: Number(document.getElementById('payAmount').value)||s.amount
+};
+document.getElementById('payModal').style.display='none';
+toast('Отмечено как оплачено');
+await syncUpdateSupplier(s, fields);
+renderSuppliers();
+});
+function allCategoriesFlat(){
+return Object.entries(COLUMNS).map(([key,c])=>({key, group:c.group, name:c.name}));
+}
+function addFreeCategory(name, group){
+const existing = Object.entries(COLUMNS).find(([k,c])=> c.name.toLowerCase()===name.toLowerCase());
+if(existing) return existing[0];
+const key = 'F' + Date.now() + Math.floor(Math.random()*100);
+COLUMNS[key] = {name, group};
+CONFIG.freeColumns = CONFIG.freeColumns || [];
+CONFIG.freeColumns.push({key, name, group});
+saveConfig();
+return key;
+}
+function sumCols(entries, cols){
+return cols.reduce((s,c)=> s + Number(entries[c]||0), 0);
+}
+/* ---------- СОСТОЯНИЕ UI ---------- */
+let currentView = null;
+let state = {
+branch: CONFIG.branches[0],
+date: new Date().toISOString().slice(0,10),
+mode: 'manual',
+period: 'day',
+rangeFrom: null,
+rangeTo: null
+};
+function toast(msg){
+const t = document.getElementById('toast');
+t.textContent = msg;
+t.classList.add('show');
+setTimeout(()=>t.classList.remove('show'), 1800);
+}
+function fmt(n){
+n = Math.round(Number(n)||0);
+return n.toLocaleString('ru-RU') + ' ₸';
+}
+/* ---------- ШАПКА: филиал / дата ---------- */
+const branchSelect = document.getElementById('branchSelect');
+const dateSelect = document.getElementById('dateSelect');
+dateSelect.max = new Date().toISOString().slice(0,10); // нельзя выбрать день, который ещё не наступил
+function renderBranchSelect(){
+branchSelect.innerHTML = CONFIG.branches.map(b=>`<option value="${b}">${b}</option>`).join('');
+branchSelect.value = state.branch;
+}
+branchSelect.addEventListener('change', e=>{ state.branch = e.target.value; renderAll(); });
+dateSelect.value = state.date;
+dateSelect.addEventListener('change', e=>{ state.date = e.target.value; renderEntryFields(); });
+/* ---------- БОКОВОЕ МЕНЮ ---------- */
+const PAGE_TITLES = {
+dashboard:'Сводка', entry:'Заполнить отчёт', history:'История по дням', compare:'Сравнение филиалов', settings:'Настройки', fullreport:'Показать отчёт', suppliers:'Поставщики / долги'
+};
+document.querySelectorAll('.side-link').forEach(link=>{
+link.addEventListener('click', ()=>{
+document.querySelectorAll('.side-link').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+link.classList.add('active');
+document.getElementById('view-'+link.dataset.view).classList.add('active');
+currentView = link.dataset.view;
+if(link.dataset.reportGroup){
+document.getElementById('pageTitle').textContent = link.textContent;
+reportGroup.value = link.dataset.reportGroup;
+refreshReportCategoryOptions();
+renderReport();
+} else {
+document.getElementById('pageTitle').textContent = PAGE_TITLES[link.dataset.view] || link.textContent;
+}
+if(link.dataset.view==='fullreport') renderDashboard();
+if(link.dataset.view==='entry') renderEntryFields();
+if(link.dataset.view==='history') renderHistory();
+if(link.dataset.view==='suppliers') renderSuppliers();
+if(link.dataset.view==='compare') renderCompare();
+if(link.dataset.view==='settings') renderSettings();
+closeSidebar();
+if(link.dataset.view==='fullreport' || link.dataset.view==='reports' || link.dataset.view==='suppliers'){
+if(pendingWrites===0){
+loadFromServer(true).then(()=>{
+if(link.dataset.view==='fullreport') renderDashboard();
+if(link.dataset.view==='reports') renderReport();
+if(link.dataset.view==='suppliers') renderSuppliers();
+});
+}
+}
+});
+});
+/* ---------- СКАЧАТЬ PDF (выписка по текущему выбранному периоду) ---------- */
+document.getElementById('frPdfBtn').addEventListener('click', ()=>{
+const {from, to} = dateRangeForPeriod(state.period, state.branch);
+const generatedAt = new Date().toLocaleString('ru-RU');
+const docNo = 'SVN-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*900+100);
+const {merged} = sumRangeForBranchLocal(state.branch, from, to);
+const f = computeFormulas(merged);
+const salaryRows = salaryBreakdown(state.branch, from, to);
+const rows = buildStatementRows(state.branch, from, to);
+let running = 0;
+const rowsHtml = rows.map(r=>{
+running += r.sign * r.amount;
+return `<tr><td>${r.date}</td><td>${r.name}${r.note?' — '+r.note:''}</td>
+<td class="num">${r.sign>0?fmt(r.amount):''}</td><td class="num">${r.sign<0?fmt(r.amount):''}</td>
+<td class="num">${fmt(running)}</td></tr>`;
+}).join('');
+const salaryHtml = salaryRows.length ? salaryRows.map(r=>`<tr><td>${r.name}${r.typeLabel?' ('+r.typeLabel+')':''}</td><td class="num">${fmt(r.amount)}</td></tr>`).join('') : '<tr><td colspan="2" style="color:#999;">Нет данных</td></tr>';
+let statementBox = document.getElementById('pdfStatementBox');
+if(!statementBox){
+statementBox = document.createElement('div');
+statementBox.id = 'pdfStatementBox';
+statementBox.className = 'print-only';
+document.getElementById('view-fullreport').appendChild(statementBox);
+}
+statementBox.innerHTML = `
+<div class="statement">
+<div class="statement-head">
+<div>
+<div class="co-name">SEVEN TIMES — COFFEE &amp; KITCHEN</div>
+<div class="co-sub">Финансовая выписка по операциям · Республика Казахстан, Орал</div>
+</div>
+<div class="doc-title">Выписка</div>
+</div>
+<div class="statement-meta">
+<div><b>Филиал</b>${state.branch}</div>
+<div><b>Номер документа</b>${docNo}</div>
+<div><b>Сформировано</b>${generatedAt}</div>
+</div>
+<div class="statement-summary">
+<div><b>Приход (продажи)</b><span class="amt">${fmt(f.sales)}</span></div>
+<div><b>Расход (закуп+зп)</b><span class="amt">${fmt(f.zakup+f.salary)}</span></div>
+<div><b>Итог чистыми</b><span class="amt">${fmt(f.net)}</span></div>
+<div><b>Долг поставщикам</b><span class="amt">${fmt(supplierTotalUnpaid(state.branch))}</span></div>
+</div>
+<div class="statement-branch-title">Операции</div>
+<table class="statement-table">
+<thead><tr><th>Дата</th><th>Операция</th><th style="text-align:right;">Приход</th><th style="text-align:right;">Расход</th><th style="text-align:right;">Остаток нарастающим</th></tr></thead>
+<tbody>${rowsHtml || '<tr><td colspan="5" style="color:#999;">Нет операций за период</td></tr>'}</tbody>
+</table>
+<div class="statement-branch-title">Зарплата — кто сколько взял</div>
+<table class="statement-table"><tbody>${salaryHtml}</tbody></table>
+<div class="statement-footer">
+<div>Seven Times · Coffee &amp; Kitchen — сформировано автоматически</div>
+<div>Документ № ${docNo}</div>
+</div>
+</div>`;
+window.print();
+});
+const SALARY_TYPE_LABELS = { salary_daily:'ежедневная', advance:'аванс', courier:'курьер', podzp:'под зп' };
+function computeBalance(branch, uptoDateStr){
+const branchData = DATA[branch] || {};
+const uptoDate = new Date(uptoDateStr+'T23:59:59');
+let cashIn = 0, kaspiIn = 0, cashOut = 0, kaspiOut = 0;
+Object.entries(branchData).forEach(([dateStr, entries])=>{
+const d = new Date(dateStr+'T00:00:00');
+if(d > uptoDate) return;
+Object.entries(entries).forEach(([key,list])=>{
+if(!Array.isArray(list)) return;
+const sum = list.reduce((s,e)=>s+Number(e.val||0),0);
+if(key==='NAL') cashIn += sum;
+else if(key==='KP') kaspiIn += sum;
+const col = COLUMNS[key];
+if(col && SOURCE_GROUPS.includes(col.group)){
+list.forEach(e=>{
+if(e.source==='Наличные') cashOut += Number(e.val||0);
+else if(e.source==='Kaspi перевод') kaspiOut += Number(e.val||0);
+});
+}
+});
+});
+return { cash: cashIn - cashOut, kaspi: kaspiIn - kaspiOut };
+}
+function salaryBreakdown(branch, from, to){
+const branchData = DATA[branch] || {};
+const byPerson = {}; // "имя|тип" -> сумма
+Object.entries(branchData).forEach(([dateStr, entries])=>{
+const d = new Date(dateStr+'T00:00:00');
+if(d < from || d > to) return;
+Object.entries(entries).forEach(([key,list])=>{
+const col = COLUMNS[key];
+if(!col || !SALARY_GROUPS.includes(col.group) || !Array.isArray(list)) return;
+list.forEach(e=>{
+const name = e.note && e.note.trim() ? e.note.trim() : (col.group==='salary_daily' ? 'Ежедневные (без имени)' : 'Без имени');
+const k = name + '|' + col.group;
+byPerson[k] = byPerson[k] || { name, typeLabel: SALARY_TYPE_LABELS[col.group], amount:0 };
+byPerson[k].amount += Number(e.val||0);
+});
+});
+});
+return Object.values(byPerson).sort((a,b)=> b.amount-a.amount);
+}
+function buildStatementRows(branch, from, to){
+const branchData = DATA[branch] || {};
+const rows = [];
+Object.entries(branchData).forEach(([dateStr, entries])=>{
+const d = new Date(dateStr+'T00:00:00');
+if(d < from || d > to) return;
+Object.entries(entries).forEach(([key,list])=>{
+const col = COLUMNS[key];
+if(!col || !Array.isArray(list)) return;
+const isSale = SALES_GROUPS.includes(col.group);
+list.forEach(e=>{
+rows.push({
+date: dateStr,
+name: col.name,
+note: e.note || '',
+amount: Number(e.val||0),
+sign: isSale ? 1 : -1
+});
+});
+});
+});
+rows.sort((a,b)=> a.date.localeCompare(b.date));
+return rows;
+}
+function sumRangeForBranchLocal(branch, from, to){
+const branchData = DATA[branch] || {};
+const merged = {};
+Object.entries(branchData).forEach(([dateStr, entries])=>{
+const d = new Date(dateStr+'T00:00:00');
+if(d < from || d > to) return;
+Object.entries(entries).forEach(([key,list])=>{
+const v = Array.isArray(list) ? list.reduce((s,e)=>s+Number(e.val||0),0) : Number(list||0);
+merged[key] = (merged[key]||0) + v;
+});
+});
+return {merged};
+}
+function openSidebar(){
+document.querySelector('.sidebar').classList.add('open');
+document.getElementById('sidebarBackdrop').classList.add('show');
+document.getElementById('hamburgerBtn').classList.add('open');
+}
+function closeSidebar(){
+document.querySelector('.sidebar').classList.remove('open');
+document.getElementById('sidebarBackdrop').classList.remove('show');
+document.getElementById('hamburgerBtn').classList.remove('open');
+}
+document.getElementById('hamburgerBtn').addEventListener('click', openSidebar);
+document.getElementById('sidebarBackdrop').addEventListener('click', closeSidebar);
+/* ---------- ВЫХОД ---------- */
+document.getElementById('logoutLink').addEventListener('click', ()=>{
+document.getElementById('appRoot').style.display='none';
+document.getElementById('gateBranch').style.display='none';
+document.getElementById('gateWelcome').style.display='none';
+document.getElementById('gateLogin').style.display='flex';
+pinBuffer=''; renderPinDots();
+closeSidebar();
+});
+/* ---------- ИСТОРИЯ ПО ДНЯМ ---------- */
+function renderHistory(){
+document.getElementById('historyBranchLabel').textContent = state.branch;
+const branchData = DATA[state.branch] || {};
+const dates = Object.keys(branchData).filter(d=>{
+const dd = branchData[d];
+return Object.values(dd).some(list=> Array.isArray(list) && list.length);
+}).sort((a,b)=> b.localeCompare(a));
+const box = document.getElementById('historyList');
+if(!dates.length){ box.innerHTML = '<div class="empty">Пока нет сохранённых отчётов по этому филиалу</div>'; return; }
+box.innerHTML = dates.map(d=>{
+const dd = branchData[d];
+let sales=0, entries=0;
+Object.entries(dd).forEach(([k,list])=>{
+if(!Array.isArray(list)) return;
+const sum = list.reduce((s,e)=>s+Number(e.val||0),0);
+entries += list.length;
+if(COLUMNS[k] && SALES_GROUPS.includes(COLUMNS[k].group)) sales += sum;
+});
+return `<div class="entry-item history-row" data-date="${d}" style="cursor:pointer;">
+<div class="ei-name"><b>${d}</b><div class="ei-note">${entries} записей · продажа ${fmt(sales)}</div></div>
+<button class="ghost-btn">Открыть</button>
+</div>`;
+}).join('');
+box.querySelectorAll('.history-row').forEach(row=>{
+row.addEventListener('click', ()=>{
+state.date = row.dataset.date;
+dateSelect.value = state.date;
+document.querySelectorAll('.side-link').forEach(t=>t.classList.remove('active'));
+document.querySelector('.side-link[data-view="entry"]').classList.add('active');
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+document.getElementById('view-entry').classList.add('active');
+document.getElementById('pageTitle').textContent = 'Заполнить отчёт';
+renderEntryFields();
+});
+});
+}
+/* ---------- ВВОД: РУЧНОЙ РЕЖИМ ---------- */
+const TEXT_MODE_DEV_PASSWORD = '6264639'; // временная блокировка режима "Текстом" на время доработки — ставит разработчик
+let textModeUnlocked = false;
+document.querySelectorAll('.mode-btn').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+if(btn.dataset.mode === 'text' && !textModeUnlocked){
+const pass = prompt('Этот режим временно закрыт на доработку.\nВведи пароль разработчика, чтобы открыть:');
+if(pass !== TEXT_MODE_DEV_PASSWORD){
+if(pass !== null) toast('Неверный пароль — режим "Текстом" пока закрыт');
+return;
+}
+textModeUnlocked = true;
+btn.textContent = 'Текстом';
+toast('Режим "Текстом" открыт');
+}
+document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+btn.classList.add('active');
+state.mode = btn.dataset.mode;
+document.getElementById('mode-manual').style.display = state.mode==='manual' ? '' : 'none';
+document.getElementById('mode-text').style.display = state.mode==='text' ? '' : 'none';
+});
+});
+function currentDayData(){
+DATA[state.branch] = DATA[state.branch] || {};
+DATA[state.branch][state.date] = DATA[state.branch][state.date] || {};
+return DATA[state.branch][state.date]; // { key: [{id,val,note}, ...] }
+}
+let entryIdSeq = 1;
+function addEntry(dd, key, val, note, source){
+dd[key] = dd[key] || [];
+dd[key].push({ id: 'e'+(entryIdSeq++)+'_'+Date.now(), val: Number(val)||0, note: note||'', source: source||'' });
+}
+function keySum(dd, key){
+return (dd[key]||[]).reduce((s,e)=>s+Number(e.val||0),0);
+}
+/* ---------- СИНХРОНИЗАЦИЯ С GOOGLE ТАБЛИЦЕЙ ---------- */
+async function syncAddEntry(key, val, note, source){
+const col = COLUMNS[key];
+const dd = currentDayData();
+if(col && SALES_GROUPS.includes(col.group)){
+addEntry(dd, key, val, note);
+const total = keySum(dd, key);
+renderEnteredList();
+pendingWrites++;
+try{
+await apiPost('set_sale', { branch: state.branch, date: state.date, key, val: total });
+}catch(err){ toast('Не сохранилось на сервере — проверь интернет'); console.error(err); }
+finally{ pendingWrites--; }
+return;
+}
+const logType = LOG_TYPE_OF_GROUP[col ? col.group : ''];
+if(logType){
+const noteToSend = logType==='expense' ? col.name : note;
+dd[key] = dd[key] || [];
+const tempId = 'pending_'+Date.now();
+dd[key].push({ id: tempId, val:Number(val)||0, note: logType==='expense' ? '' : note, source: source||'', _logType: logType, _pending:true });
+renderEnteredList();
+pendingWrites++;
+try{
+const res = await apiPost('add_log', { logType, date: state.date, branch: state.branch, amount: val, note: noteToSend, source: source||'' });
+const entry = dd[key].find(e=>e.id===tempId);
+if(entry){ entry._row = res.row; entry._pending = false; entry.id = 'srv_log_'+res.row; }
+renderEnteredList();
+}catch(err){ toast('Не сохранилось на сервере — проверь интернет'); console.error(err); }
+finally{ pendingWrites--; }
+return;
+}
+addEntry(dd, key, val, note);
+renderEnteredList();
+}
+async function syncEditEntry(key, entry, newVal, newNote, newSource){
+entry.val = Number(newVal);
+if(newNote!==undefined) entry.note = newNote;
+if(newSource!==undefined) entry.source = newSource;
+const col = COLUMNS[key];
+pendingWrites++;
+try{
+if(col && SALES_GROUPS.includes(col.group)){
+const total = keySum(currentDayData(), key);
+await apiPost('set_sale', { branch: state.branch, date: state.date, key, val: total });
+return;
+}
+if(entry._logType && entry._row){
+await apiPost('update_log', { logType: entry._logType, row: entry._row, amount: entry.val, note: entry.note, source: entry.source||'' });
+}
+}
+catch(err){ toast('Не сохранилось на сервере'); console.error(err); }
+finally{ pendingWrites--; }
+}
+async function syncDeleteEntry(key, entry){
+const dd = currentDayData();
+dd[key] = (dd[key]||[]).filter(e=>e.id!==entry.id);
+const col = COLUMNS[key];
+pendingWrites++;
+try{
+if(col && SALES_GROUPS.includes(col.group)){
+const total = keySum(dd, key);
+await apiPost('set_sale', { branch: state.branch, date: state.date, key, val: total });
+return;
+}
+if(entry._logType && entry._row){
+await apiPost('delete_log', { logType: entry._logType, row: entry._row });
+}
+}
+catch(err){ toast('Не сохранилось на сервере'); console.error(err); }
+finally{ pendingWrites--; }
+}
+let guidedGroup = null;
+document.querySelectorAll('#guidedSourceRow .source-chip').forEach(chip=>{
+chip.addEventListener('click', ()=>{
+const alreadyActive = chip.classList.contains('active');
+document.querySelectorAll('#guidedSourceRow .source-chip').forEach(c=>c.classList.remove('active'));
+if(!alreadyActive){
+chip.classList.add('active');
+document.getElementById('guidedSource').value = chip.dataset.source;
+} else {
+document.getElementById('guidedSource').value = '';
+}
+});
+});
+function renderGuidedGroups(){
+const box = document.getElementById('guidedGroups');
+box.innerHTML = GROUP_ORDER.filter(g=>Object.keys(COLUMNS).some(k=>COLUMNS[k].group===g)).map(g=>
+`<div class="pick-chip ${g===guidedGroup?'active':''}" data-g="${g}">${GROUP_LABELS[g]}</div>`
+).join('');
+box.querySelectorAll('.pick-chip').forEach(chip=>{
+chip.addEventListener('click', ()=>{
+guidedGroup = chip.dataset.g;
+renderGuidedGroups();
+renderGuidedCats();
+});
+});
+}
+function renderGuidedCats(){
+const block = document.getElementById('guidedCatBlock');
+const inputRow = document.getElementById('guidedInputRow');
+const unpaidRow = document.getElementById('guidedUnpaidRow');
+const sourceRow = document.getElementById('guidedSourceRow');
+unpaidRow.style.display = guidedGroup==='expense' ? 'flex' : 'none';
+document.getElementById('guidedUnpaid').checked = false;
+sourceRow.style.display = SOURCE_GROUPS.includes(guidedGroup) ? 'flex' : 'none';
+document.getElementById('guidedSource').value = '';
+sourceRow.querySelectorAll('.source-chip').forEach(c=>c.classList.remove('active'));
+if(!guidedGroup){ block.style.display='none'; inputRow.style.display='none'; return; }
+block.style.display='';
+document.getElementById('guidedGroupTitle').textContent = GROUP_LABELS[guidedGroup];
+const keys = Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===guidedGroup);
+const box = document.getElementById('guidedCats');
+if(keys.length > 6){
+box.innerHTML = `<select id="guidedCatSelect" style="flex:2;min-width:180px;">
+<option value="">— выбери статью —</option>
+${keys.map(k=>`<option value="${k}">${COLUMNS[k].name}</option>`).join('')}
+<option value="__NEW__">+ Своя статья (если купили что-то новое)</option>
+</select>
+<div id="guidedNewCatRow" style="display:none;flex:2;min-width:200px;">
+<input type="text" id="guidedNewCatName" placeholder="Название новой статьи, например «Творог»">
+</div>`;
+inputRow.style.display='flex';
+inputRow.querySelector('#guidedNote').placeholder = 'Примечание (необязательно)';
+const sel = document.getElementById('guidedCatSelect');
+const v = document.getElementById('guidedValue');
+sel.addEventListener('change', ()=>{
+const newRow = document.getElementById('guidedNewCatRow');
+if(sel.value === '__NEW__'){
+newRow.style.display = 'flex';
+newRow.querySelector('input').focus();
+v.dataset.key = '';
+v.dataset.newCategory = 'true';
+} else {
+newRow.style.display = 'none';
+v.dataset.key = sel.value;
+v.dataset.newCategory = '';
+v.focus();
+}
+});
+v.dataset.key = '';
+} else {
+box.innerHTML = keys.map(k=>`<div class="pick-chip" data-k="${k}">${COLUMNS[k].name}</div>`).join('');
+const noteInp = document.getElementById('guidedNote');
+const isPersonGroup = guidedGroup==='advance' || guidedGroup==='courier';
+noteInp.placeholder = isPersonGroup ? 'Кому — обязательно' : 'Примечание (кому, за что — необязательно)';
+box.querySelectorAll('.pick-chip').forEach(chip=>{
+chip.addEventListener('click', ()=>{
+box.querySelectorAll('.pick-chip').forEach(c=>c.classList.remove('active'));
+chip.classList.add('active');
+inputRow.style.display='flex';
+const v = document.getElementById('guidedValue');
+v.value='';
+v.dataset.key = chip.dataset.k;
+v.focus();
+});
+});
+inputRow.style.display='none';
+}
+}
+document.getElementById('guidedAddBtn').addEventListener('click', addGuidedValue);
+document.getElementById('guidedValue').addEventListener('keydown', e=>{ if(e.key==='Enter') addGuidedValue(); });
+async function addGuidedValue(){
+const inp = document.getElementById('guidedValue');
+const noteInp = document.getElementById('guidedNote');
+let key = inp.dataset.key;
+if(inp.dataset.newCategory === 'true'){
+const newNameInp = document.getElementById('guidedNewCatName');
+const newName = newNameInp ? newNameInp.value.trim() : '';
+if(!newName){ toast('Напиши название новой статьи'); return; }
+key = addFreeCategory(newName, guidedGroup);
+inp.dataset.key = key;
+inp.dataset.newCategory = '';
+const newRow = document.getElementById('guidedNewCatRow');
+if(newRow) newRow.style.display = 'none';
+if(newNameInp) newNameInp.value = '';
+const sel = document.getElementById('guidedCatSelect');
+if(sel){
+const opt = document.createElement('option');
+opt.value = key; opt.textContent = newName;
+sel.insertBefore(opt, sel.lastElementChild);
+sel.value = key;
+}
+}
+if(!key || inp.value===''){ toast('Выбери категорию и введи сумму'); return; }
+const noteVal0 = noteInp.value.trim();
+if((guidedGroup==='advance' || guidedGroup==='courier') && !noteVal0){
+toast('Укажи, кому — без имени нельзя');
+noteInp.focus();
+return;
+}
+const valForToast = inp.value;
+const catName = COLUMNS[key].name;
+const noteVal = noteVal0;
+const isUnpaid = document.getElementById('guidedUnpaid').checked;
+const sourceInp = document.getElementById('guidedSource');
+const sourceVal = sourceInp.value; // необязательное поле — не проверяем
+inp.value=''; noteInp.value='';
+document.getElementById('guidedUnpaid').checked = false;
+sourceInp.value = '';
+document.querySelectorAll('#guidedSourceRow .source-chip').forEach(c=>c.classList.remove('active'));
+const sel = document.getElementById('guidedCatSelect');
+if(sel){
+sel.value=''; inp.dataset.key='';
+} else {
+document.getElementById('guidedInputRow').style.display='none';
+document.querySelectorAll('#guidedCats .pick-chip').forEach(c=>c.classList.remove('active'));
+}
+if(isUnpaid){
+toast(catName + ' — в долг поставщику');
+await syncAddSupplier(state.branch, catName, valForToast, noteVal, state.date);
+return;
+}
+toast(catName + ' — ' + fmt(valForToast));
+await syncAddEntry(key, valForToast, noteVal, sourceVal);
+}
+function renderEnteredList(){
+const dd = currentDayData();
+const box = document.getElementById('enteredList');
+const rows = [];
+Object.keys(dd).forEach(k=>{
+if(!COLUMNS[k]) return;
+(dd[k]||[]).forEach(entry=> rows.push({key:k, entry}));
+});
+if(!rows.length){ box.innerHTML = '<div class="empty">Пока ничего не внесено</div>'; return; }
+box.innerHTML = rows.map(r=>{
+const showSource = SOURCE_GROUPS.includes(COLUMNS[r.key].group);
+return `
+<div class="entry-item" data-key="${r.key}" data-id="${r.entry.id}">
+<div class="ei-name">${COLUMNS[r.key].name}${r.entry.note?`<div class="ei-note">${r.entry.note}</div>`:''}</div>
+<input class="ei-note-edit" type="text" placeholder="примечание" value="${r.entry.note||''}" style="width:110px;">
+${showSource ? `<div class="chip-row" style="gap:6px;flex:0 0 auto;">
+<div class="pick-chip source-chip source-cash ei-source-btn ${r.entry.source==='Наличные'?'active':''}" data-source="Наличные" style="padding:6px 10px;font-size:12px;">Наличные</div>
+<div class="pick-chip source-chip source-kaspi ei-source-btn ${r.entry.source==='Kaspi перевод'?'active':''}" data-source="Kaspi перевод" style="padding:6px 10px;font-size:12px;">Kaspi перевод</div>
+</div>` : ''}
+<input class="ei-val" type="number" value="${r.entry.val}">
+<button class="ghost-btn ei-del">Удалить</button>
+</div>`;
+}).join('');
+box.querySelectorAll('.ei-val').forEach(inp=>{
+inp.addEventListener('change', ()=>{
+const item = inp.closest('.entry-item');
+const k = item.dataset.key, id = item.dataset.id;
+const e = (currentDayData()[k]||[]).find(x=>x.id===id);
+if(e) syncEditEntry(k, e, inp.value==='' ? 0 : Number(inp.value));
+});
+});
+box.querySelectorAll('.ei-note-edit').forEach(inp=>{
+inp.addEventListener('change', ()=>{
+const item = inp.closest('.entry-item');
+const k = item.dataset.key, id = item.dataset.id;
+const e = (currentDayData()[k]||[]).find(x=>x.id===id);
+if(e) syncEditEntry(k, e, e.val, inp.value);
+});
+});
+box.querySelectorAll('.ei-source-btn').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const item = btn.closest('.entry-item');
+const k = item.dataset.key, id = item.dataset.id;
+const e = (currentDayData()[k]||[]).find(x=>x.id===id);
+if(!e) return;
+const wasActive = btn.classList.contains('active');
+item.querySelectorAll('.ei-source-btn').forEach(b=>b.classList.remove('active'));
+const newSource = wasActive ? '' : btn.dataset.source;
+if(!wasActive) btn.classList.add('active');
+syncEditEntry(k, e, e.val, e.note, newSource);
+});
+});
+box.querySelectorAll('.ei-del').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const item = btn.closest('.entry-item');
+const k = item.dataset.key, id = item.dataset.id;
+const e = (currentDayData()[k]||[]).find(x=>x.id===id);
+if(e) syncDeleteEntry(k, e);
+renderEnteredList();
+});
+});
+}
+function renderEntryFields(){
+guidedGroup = null;
+renderGuidedGroups();
+renderGuidedCats();
+renderEnteredList();
+const banner = document.getElementById('entryDateBanner');
+if(banner){
+const d = new Date(state.date+'T00:00:00');
+const today = new Date().toISOString().slice(0,10);
+const isToday = state.date === today;
+banner.textContent = d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + (isToday ? ' (сегодня)' : ' ⚠️ не сегодня');
+}
+}
+/* ---------- ВВОД: ТЕКСТОВЫЙ ПАРСЕР (заточен под реальные "рваные" отчёты кассиров) ---------- */
+function normalize(s){
+let t = s.toLowerCase()
+.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u2705\u2757\u2753\u203C\u{FE0F}]/gu,' ') // эмодзи/галочки/варнинги
+.replace(/[^\wа-яё\s+.,-]/gi,' ')
+.replace(/\s+/g,' ').trim();
+const translit = [
+[/каспи(й)?/g,'kaspi'], [/халык/g,'halyk'], [/(вольт|волт)/g,'wolt'],
+[/бсс/g,'bcc']
+];
+translit.forEach(([re,rep])=> t = t.replace(re,rep));
+return t;
+}
+function tokenize(s){
+return normalize(s).split(/[\s\-]+/).filter(w=>w.length>=3 && !/^\d+$/.test(w));
+}
+function wordsMatch(a,b){
+if(a===b) return true;
+const min = Math.min(a.length,b.length);
+if(min<4) return false;
+return a.startsWith(b.slice(0,min)) || b.startsWith(a.slice(0,min));
+}
+const STOP_WORDS = new Set(['общий','общая','итого','всего','продажа','расход','расходы','накладные','накладная','неопл','счет','счёт']);
+const HEADER_PATTERNS = [
+{re:/неопл/i, ctx:'debt'},
+{re:/под\s*зп/i, ctx:'advance'},
+{re:/расход/i, ctx:'other'}
+];
+const TOTAL_PATTERNS = [
+{re:/общ.*продаж/i, label:'Общая продажа (по кассиру)', group:'sales'},
+{re:/общ.*расход/i, label:'Общий расход (по кассиру)', group:'other_zakup'}
+];
+function extractAmount(line){
+const cleaned = line.replace(/\b\d{1,2}[.\/]\d{1,2}(?:[.\/]\d{2,4})?\b/g,' ');
+const plusGroup = cleaned.match(/\d[\d\s]*(?:\s*\+\s*\d[\d\s]*)+/);
+if(plusGroup){
+const parts = plusGroup[0].split('+').map(p=>Number(p.replace(/\s/g,'')));
+return parts.reduce((a,b)=>a+(b||0),0);
+}
+const nums = cleaned.match(/\d[\d\s]*(?:[.,]\d+)?/g);
+if(!nums) return null;
+return Number(nums[nums.length-1].replace(/\s/g,'').replace(',','.'));
+}
+function bestCategoryMatch(line, cats){
+const lineWords = tokenize(line).filter(w=>!STOP_WORDS.has(w));
+let best = null, bestScore = 0, bestWordLen = 0;
+cats.forEach(c=>{
+const catWords = tokenize(c.name);
+let score = 0, longest = 0;
+catWords.forEach(cw=>{
+if(lineWords.some(lw=>wordsMatch(lw,cw))){ score++; if(cw.length>longest) longest=cw.length; }
+});
+if(score > bestScore || (score===bestScore && longest>bestWordLen)){
+best = c; bestScore = score; bestWordLen = longest;
+}
+});
+return bestScore>0 ? best : null;
+}
+function renderParsePreview(){
+const matched = window.__pendingParsed || [];
+const pendingSuppliers = window.__pendingSuppliers || [];
+const totalsFromCashier = window.__totalsFromCashier || [];
+const box = document.getElementById('parsePreviewFields');
+if(!matched.length && !pendingSuppliers.length){
+box.innerHTML = '<div class="empty">Ничего не распознано. Проверь формулировки строк отчёта.</div>';
+return;
+}
+const byGroup = {};
+matched.forEach((m,i)=>{
+const col = COLUMNS[m.key];
+const g = col ? col.group : 'other';
+byGroup[g] = byGroup[g] || [];
+byGroup[g].push({...m, idx:i});
+});
+let html = '';
+Object.keys(byGroup).forEach(g=>{
+html += `<div class="group-title">${GROUP_LABELS[g] || g}</div><div style="margin-bottom:12px;">` +
+byGroup[g].map(m=>`
+<div class="entry-item" data-idx="${m.idx}">
+<div class="ei-name">${COLUMNS[m.key].name}${m.note?` <span class="ei-note">— ${m.note}</span>`:''}</div>
+<input type="number" class="pm-val" value="${m.val}" style="width:110px;">
+<button class="ghost-btn pm-del" title="Удалить">✕</button>
+</div>`).join('') + '</div>';
+});
+if(pendingSuppliers.length){
+html += `<div class="group-title">⚠️ Неоплаченные — уйдут в раздел «Поставщики», не в расходы дня</div><div style="margin-bottom:12px;">` +
+pendingSuppliers.map((s,i)=>`
+<div class="entry-item" data-sup-idx="${i}">
+<div class="ei-name">${s.name}</div>
+<input type="number" class="ps-val" value="${s.amount}" style="width:110px;">
+<button class="ghost-btn ps-del" title="Удалить">✕</button>
+</div>`).join('') + '</div>';
+}
+if(totalsFromCashier.length){
+html += `<div class="group-title">Сверка с итогом кассира</div><div>` + totalsFromCashier.map(t=>{
+let ours = 0;
+matched.forEach(m=>{ if(COLUMNS[m.key] && SALES_GROUPS.includes(COLUMNS[m.key].group) && t.group==='sales') ours += m.val; });
+const diff = t.val - ours;
+const ok = Math.abs(diff) < 1;
+return `<div class="entry-item"><div class="ei-name">${t.label}<div class="ei-note">по строкам отчёта: ${fmt(ours)} ${ok?'✅ совпадает':'⚠️ разница '+fmt(diff)}</div></div><div style="font-weight:700;">${fmt(t.val)}</div></div>`;
+}).join('') + '</div>';
+}
+box.innerHTML = html;
+box.querySelectorAll('.pm-val').forEach(inp=>{
+inp.addEventListener('change', ()=>{
+const idx = Number(inp.closest('.entry-item').dataset.idx);
+matched[idx].val = Number(inp.value)||0;
+});
+});
+box.querySelectorAll('.pm-del').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const idx = Number(btn.closest('.entry-item').dataset.idx);
+window.__pendingParsed = matched.filter((_,i)=>i!==idx);
+renderParsePreview();
+});
+});
+box.querySelectorAll('.ps-val').forEach(inp=>{
+inp.addEventListener('change', ()=>{
+const idx = Number(inp.closest('.entry-item').dataset.supIdx);
+pendingSuppliers[idx].amount = Number(inp.value)||0;
+});
+});
+box.querySelectorAll('.ps-del').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const idx = Number(btn.closest('.entry-item').dataset.supIdx);
+window.__pendingSuppliers = pendingSuppliers.filter((_,i)=>i!==idx);
+renderParsePreview();
+});
+});
+}
+document.getElementById('parseBtn').addEventListener('click', ()=>{
+runTextParse(document.getElementById('rawText').value);
+});
+function runTextParse(raw){
+const lines = raw.split(/\n|;/).map(l=>l.trim()).filter(Boolean);
+const cats = allCategoriesFlat();
+const matched = []; // список записей, дубли категорий разрешены
+const unmatched = [];
+const totalsFromCashier = []; // сверка
+const pendingSuppliers = []; // строки под "Неопл" — уйдут в Поставщиков
+let ctx = null;
+lines.forEach(line=>{
+if(/^[*\s]*дата[*\s:]/i.test(line.trim())){ return; }
+const hasDigits = /\d/.test(line);
+if(!hasDigits){
+const header = HEADER_PATTERNS.find(h=>h.re.test(line));
+if(header){ ctx = header.ctx; return; }
+return; // прочий текст без цифр — просто пропускаем
+}
+const totalPattern = TOTAL_PATTERNS.find(t=>t.re.test(line));
+if(totalPattern){
+const amt = extractAmount(line);
+if(amt!==null) totalsFromCashier.push({label:totalPattern.label, val:amt, group:totalPattern.group});
+return;
+}
+const amount = extractAmount(line);
+if(amount === null){ unmatched.push(line); return; }
+if(ctx==='debt'){
+const best = bestCategoryMatch(line, cats);
+if(best && SALES_GROUPS.includes(COLUMNS[best.key].group)){
+matched.push({key:best.key, val:amount});
+return;
+}
+let name;
+if(best){ name = COLUMNS[best.key].name; }
+else {
+const nameGuess = normalize(line).replace(/\d[\d\s.,+]*/g,'').trim();
+name = nameGuess ? nameGuess[0].toUpperCase()+nameGuess.slice(1) : 'Поставщик';
+}
+pendingSuppliers.push({name, amount, date: state.date, note:'из текстового отчёта — неоплачено'});
+return;
+}
+const best = bestCategoryMatch(line, cats);
+if(best){
+matched.push({key:best.key, val:amount});
+return;
+}
+if(ctx==='advance'){
+const nameGuess = normalize(line).replace(/\d[\d\s.,+]*/g,'').trim();
+matched.push({key:'SAL_ADVANCE', val:amount, note: nameGuess ? nameGuess[0].toUpperCase()+nameGuess.slice(1) : ''});
+return;
+}
+unmatched.push(line);
+});
+window.__pendingParsed = matched;
+window.__pendingSuppliers = pendingSuppliers;
+window.__totalsFromCashier = totalsFromCashier;
+window.__unmatchedLines = unmatched;
+document.getElementById('parsePreview').style.display = '';
+renderParsePreview();
+const unmatchedBtn = document.getElementById('unmatchedBtn');
+window.__unmatchedLines = unmatched;
+if(unmatched.length){
+unmatchedBtn.style.display = '';
+unmatchedBtn.textContent = `Не распознано (${unmatched.length}) — добавить как категории`;
+unmatchedBtn.onclick = renderUnmatchedPanel;
+} else {
+unmatchedBtn.style.display = 'none';
+const oldPanel = document.getElementById('unmatchedPanel');
+if(oldPanel) oldPanel.remove();
+}
+}
+function renderUnmatchedPanel(){
+let panel = document.getElementById('unmatchedPanel');
+if(!panel){
+panel = document.createElement('div');
+panel.id = 'unmatchedPanel';
+panel.style.marginTop = '14px';
+document.getElementById('parsePreview').appendChild(panel);
+}
+const lines = window.__unmatchedLines || [];
+panel.innerHTML = '<div class="group-title">Не распознано — добавь как категорию, если это реальная позиция</div>' +
+lines.map((line,i)=>{
+const amt = extractAmount(line);
+const guessName = line.replace(/\d[\d\s.,+]*/g,'').replace(/[✅⚠️❗️‼️]/g,'').trim() || line;
+return `<div class="entry-item" data-idx="${i}">
+<input type="text" class="um-name" value="${guessName.replace(/"/g,'&quot;')}">
+<input type="number" class="um-val" value="${amt!==null?amt:''}">
+<select class="um-group">
+<option value="expense">Расходы</option>
+<option value="salary_daily">Зарплата — ежедневные</option>
+<option value="advance">Аванс</option>
+<option value="courier">Курьер</option>
+<option value="agg">Агрегатор</option>
+<option value="term">Терминал</option>
+<option value="cash">Наличные</option>
+<option value="unpaid">Неоплаченный счёт</option>
+<option value="supplier">Поставщик (накладная)</option>
+</select>
+<button class="ghost-btn um-add">Внести</button>
+<button class="ghost-btn um-skip" title="Пропустить">✕</button>
+</div>`;
+}).join('');
+panel.querySelectorAll('.um-skip').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const item = btn.closest('.entry-item');
+const idx = Number(item.dataset.idx);
+window.__unmatchedLines = (window.__unmatchedLines||[]).filter((_,i)=>i!==idx);
+renderUnmatchedPanel();
+const unmatchedBtn = document.getElementById('unmatchedBtn');
+const remaining = window.__unmatchedLines.length;
+if(remaining){
+unmatchedBtn.textContent = `Не распознано (${remaining}) — добавить как категории`;
+} else {
+unmatchedBtn.style.display = 'none';
+panel.remove();
+}
+});
+});
+panel.querySelectorAll('.um-add').forEach(btn=>{
+btn.addEventListener('click', async ()=>{
+const item = btn.closest('.entry-item');
+const name = item.querySelector('.um-name').value.trim();
+const val = item.querySelector('.um-val').value;
+const group = item.querySelector('.um-group').value;
+if(!name || val===''){ toast('Заполни название и сумму'); return; }
+item.style.opacity = '0.4';
+item.querySelectorAll('input,select,button').forEach(el=>el.disabled=true);
+toast(name + ' — добавлено');
+if(group === 'supplier'){
+await syncAddSupplier(state.branch, name, val, 'из текстового отчёта', state.date);
+} else {
+const key = addFreeCategory(name, group);
+await syncAddEntry(key, val, 'из текстового отчёта');
+}
+});
+});
+}
+document.getElementById('applyTextBtn').addEventListener('click', ()=>{
+const matched = window.__pendingParsed || [];
+const pendingSuppliers = window.__pendingSuppliers || [];
+if(!matched.length && !pendingSuppliers.length){ toast('Нечего сохранять — сначала распознай текст'); return; }
+openConfirmModal('text');
+});
+/* ---------- СОХРАНЕНИЕ С ПОДТВЕРЖДЕНИЕМ ---------- */
+document.getElementById('saveBtn').addEventListener('click', ()=> openConfirmModal('guided'));
+let confirmModalMode = 'guided';
+function openConfirmModal(mode){
+confirmModalMode = mode || 'guided';
+let rows = [];
+if(confirmModalMode === 'text'){
+const matched = window.__pendingParsed || [];
+const pendingSuppliers = window.__pendingSuppliers || [];
+matched.forEach(m=> rows.push({name:COLUMNS[m.key].name + (m.note?' — '+m.note:''), val:m.val}));
+pendingSuppliers.forEach(s=> rows.push({name:'Поставщик: '+s.name, val:s.amount}));
+} else {
+const dd = currentDayData();
+Object.keys(dd).forEach(k=>{
+if(!COLUMNS[k]) return;
+(dd[k]||[]).forEach(e=> rows.push({name:COLUMNS[k].name + (e.note?' — '+e.note:''), val:e.val}));
+});
+}
+if(!rows.length){ toast('Сначала внеси хотя бы одну цифру'); return; }
+const total = rows.reduce((s,r)=>s+r.val,0);
+document.getElementById('confirmList').innerHTML = '<div class="table-scroll">' +
+'<table>' + rows.map(r=>`<tr><td>${r.name}</td><td class="num">${fmt(r.val)}</td></tr>`).join('') +
+`<tr class="total-row"><td>Итого (${rows.length} записей)</td><td class="num">${fmt(total)}</td></tr></table></div>`;
+document.getElementById('confirmModal').style.display='flex';
+}
+document.getElementById('confirmNo').addEventListener('click', ()=>{
+document.getElementById('confirmModal').style.display='none';
+});
+document.getElementById('confirmYes').addEventListener('click', async ()=>{
+document.getElementById('confirmModal').style.display='none';
+if(confirmModalMode === 'text'){
+const matched = window.__pendingParsed || [];
+const pendingSuppliers = window.__pendingSuppliers || [];
+toast('Сохраняем…');
+for(const m of matched){
+await syncAddEntry(m.key, m.val, m.note || 'из текстового отчёта');
+}
+for(const s of pendingSuppliers){
+await syncAddSupplier(state.branch, s.name, s.amount, s.note, s.date);
+}
+document.getElementById('parsePreview').style.display='none';
+document.getElementById('rawText').value='';
+window.__pendingParsed = []; window.__pendingSuppliers = [];
+}
+toast('Сохранено: ' + state.branch + ' · ' + state.date);
+});
+/* ---------- ВСПОМОГАТЕЛЬНЫЕ РАСЧЁТЫ ---------- */
+function dateRangeForPeriod(period, branch){
+const today = new Date(state.date + 'T00:00:00');
+let from, to = new Date(today);
+if(period === 'day'){ from = new Date(today); }
+else if(period === 'yesterday'){ from = new Date(today); from.setDate(from.getDate()-1); to = new Date(from); }
+else if(period === '7'){ from = new Date(today); from.setDate(from.getDate()-6); }
+else if(period === '15'){ from = new Date(today); from.setDate(from.getDate()-14); }
+else if(period === '30'){ from = new Date(today); from.setDate(from.getDate()-29); }
+else if(period === 'daily'){
+if(state.dailyFrom && state.dailyTo){ from = new Date(state.dailyFrom); to = new Date(state.dailyTo); }
+else { from = new Date(today); from.setDate(from.getDate()-6); }
+}
+else if(period === 'month'){
+const m = state.monthSel!==undefined ? state.monthSel : today.getMonth();
+const y = state.monthYearSel!==undefined ? state.monthYearSel : today.getFullYear();
+from = new Date(y, m, 1); to = new Date(y, m+1, 0);
+}
+else if(period === 'year'){ from = new Date(today.getFullYear(), 0, 1); to = new Date(today.getFullYear(), 11, 31); }
+else if(period === 'range'){ from = new Date(state.rangeFrom); to = new Date(state.rangeTo); }
+return {from, to};
+}
+function sumByGroup(branch, period){
+const {from, to} = dateRangeForPeriod(period, branch);
+const branchData = DATA[branch] || {};
+const totals = {};
+GROUP_ORDER.forEach(g=> totals[g]={});
+const merged = {}; // сумма по каждой колонке за период — нужна для формул
+Object.entries(branchData).forEach(([dateStr, entries])=>{
+const d = new Date(dateStr + 'T00:00:00');
+if(d < from || d > to) return;
+Object.entries(entries).forEach(([key,list])=>{
+const col = COLUMNS[key];
+const v = Array.isArray(list) ? list.reduce((s,e)=>s+Number(e.val||0),0) : Number(list||0);
+merged[key] = (merged[key]||0) + v;
+if(col){
+totals[col.group] = totals[col.group] || {};
+totals[col.group][key] = (totals[col.group][key]||0) + v;
+}
+});
+});
+return {totals, merged};
+}
+function groupTotal(totals, g){
+return Object.values(totals[g]||{}).reduce((a,b)=>a+b,0);
+}
+function keysOfGroup_(group){
+return Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===group);
+}
+function sumGroupFromMerged_(merged, group){
+return sumCols(merged, keysOfGroup_(group));
+}
+function computeFormulas(merged){
+const agg = sumGroupFromMerged_(merged,'agg');
+const term = sumGroupFromMerged_(merged,'term');
+const cash = sumGroupFromMerged_(merged,'cash');
+const unpaid = sumGroupFromMerged_(merged,'unpaid');
+const salesTotal = agg + term + cash + unpaid;
+const expense = sumGroupFromMerged_(merged,'expense');
+const salaryDaily = sumGroupFromMerged_(merged,'salary_daily');
+const advance = sumGroupFromMerged_(merged,'advance');
+const courier = sumGroupFromMerged_(merged,'courier');
+const podzp = sumGroupFromMerged_(merged,'podzp');
+const salary = salaryDaily + advance + courier + podzp;
+return {
+sales: salesTotal, agg, term, cash, unpaid,
+zakup: expense, // "закуп" = единый расходный список
+salary, salaryDaily, advance, courier, podzp,
+other: 0, // прочих расходов больше нет отдельной группой — всё в expense
+net: salesTotal - expense - salary
+};
+}
+/* ---------- ДЭШБОРД ---------- */
+const MONTH_NAMES_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+function renderPeriodExtra(){
+const box = document.getElementById('periodExtra');
+const today = new Date(state.date+'T00:00:00');
+if(state.period === 'daily'){
+box.innerHTML = `<div class="row no-print">
+<input type="date" id="dailyFrom" value="${state.dailyFrom||''}">
+<input type="date" id="dailyTo" value="${state.dailyTo||''}">
+</div>`;
+const apply = ()=>{
+state.dailyFrom = document.getElementById('dailyFrom').value;
+state.dailyTo = document.getElementById('dailyTo').value;
+if(state.dailyFrom && state.dailyTo) renderDashboard();
+};
+document.getElementById('dailyFrom').addEventListener('change', apply);
+document.getElementById('dailyTo').addEventListener('change', apply);
+return;
+}
+if(state.period === 'month'){
+const m = state.monthSel!==undefined ? state.monthSel : today.getMonth();
+const y = state.monthYearSel!==undefined ? state.monthYearSel : today.getFullYear();
+box.innerHTML = `<div class="row no-print">
+<select id="monthSelect">${MONTH_NAMES_RU.map((name,i)=>`<option value="${i}" ${i===m?'selected':''}>${name}</option>`).join('')}</select>
+<input type="number" id="monthYear" value="${y}" max="${new Date().getFullYear()}" style="max-width:110px;">
+</div>`;
+document.getElementById('monthSelect').addEventListener('change', e=>{
+const today = new Date();
+const y = state.monthYearSel!==undefined ? state.monthYearSel : today.getFullYear();
+let m = Number(e.target.value);
+if(y===today.getFullYear() && m>today.getMonth()){ m = today.getMonth(); e.target.value = m; toast('Этот месяц ещё не наступил'); }
+state.monthSel = m; renderDashboard();
+});
+document.getElementById('monthYear').addEventListener('change', e=>{
+const today = new Date();
+let y = Number(e.target.value);
+if(y>today.getFullYear()){ y = today.getFullYear(); e.target.value = y; toast('Этот год ещё не наступил'); }
+state.monthYearSel = y;
+if(y===today.getFullYear() && state.monthSel>today.getMonth()){ state.monthSel = today.getMonth(); document.getElementById('monthSelect').value = state.monthSel; }
+renderDashboard();
+});
+return;
+}
+if(state.period === 'range'){
+box.innerHTML = `<div class="row no-print">
+<input type="date" id="rangeFrom" value="${state.rangeFrom||''}">
+<input type="date" id="rangeTo" value="${state.rangeTo||''}">
+</div>`;
+const apply = ()=>{
+state.rangeFrom = document.getElementById('rangeFrom').value;
+state.rangeTo = document.getElementById('rangeTo').value;
+if(state.rangeFrom && state.rangeTo) renderDashboard();
+};
+document.getElementById('rangeFrom').addEventListener('change', apply);
+document.getElementById('rangeTo').addEventListener('change', apply);
+return;
+}
+box.innerHTML = '';
+}
+document.querySelectorAll('#periodChips .chip').forEach(chip=>{
+chip.addEventListener('click', ()=>{
+document.querySelectorAll('#periodChips .chip').forEach(c=>c.classList.remove('active'));
+chip.classList.add('active');
+state.period = chip.dataset.period;
+renderDashboard();
+});
+});
+renderPeriodExtra();
+function renderBars(container, obj, max){
+const entries = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+if(!entries.length){ container.innerHTML = '<div class="empty">Нет данных за период</div>'; return; }
+const top = max ? entries.slice(0,max) : entries;
+const maxVal = Math.max(...top.map(e=>e[1]), 1);
+container.innerHTML = top.map(([name,val])=>`
+<div class="bar-row">
+<div class="bar-label">${name}</div>
+<div class="bar-track"><div class="bar-fill" style="width:${(val/maxVal*100).toFixed(1)}%"></div></div>
+<div class="bar-val">${fmt(val)}</div>
+</div>`).join('');
+}
+function keyedToNamed(obj){
+const out = {};
+Object.entries(obj).forEach(([k,v])=>{ out[COLUMNS[k]?COLUMNS[k].name:k] = v; });
+return out;
+}
+function renderTrend(){
+const box = document.getElementById('trendBars');
+const {from, to} = dateRangeForPeriod(state.period, state.branch);
+const branchData = DATA[state.branch] || {};
+const days = [];
+const cur = new Date(from);
+while(cur <= to){
+const key = cur.toISOString().slice(0,10);
+const dd = branchData[key] || {};
+let sum = 0;
+Object.entries(dd).forEach(([k,list])=>{
+if(COLUMNS[k] && SALES_GROUPS.includes(COLUMNS[k].group) && Array.isArray(list)){
+sum += list.reduce((s,e)=>s+Number(e.val||0),0);
+}
+});
+days.push([key, sum]);
+cur.setDate(cur.getDate()+1);
+}
+if(days.length<=1){ box.innerHTML = '<div class="empty">Выбери период больше одного дня</div>'; return; }
+const maxVal = Math.max(...days.map(d=>d[1]), 1);
+box.innerHTML = days.map(([d,v])=>`
+<div class="bar-row">
+<div class="bar-label">${d.slice(8,10)}.${d.slice(5,7)}</div>
+<div class="bar-track"><div class="bar-fill" style="width:${(v/maxVal*100).toFixed(1)}%"></div></div>
+<div class="bar-val">${fmt(v)}</div>
+</div>`).join('');
+}
+function renderDashboard(){
+renderPeriodExtra();
+if(state.period === 'daily'){
+document.getElementById('summaryCards').style.display = 'none';
+document.getElementById('dailyTrendCard').style.display = '';
+renderTrend();
+return;
+}
+document.getElementById('summaryCards').style.display = '';
+document.getElementById('dailyTrendCard').style.display = 'none';
+const {totals, merged} = sumByGroup(state.branch, state.period);
+const f = computeFormulas(merged);
+document.getElementById('totalsBar').innerHTML = `
+<div class="stat pos"><div class="label">Общая продажа</div><div class="value">${fmt(f.sales)}</div></div>
+<div class="stat"><div class="label">Расходы (закуп+прочее)</div><div class="value">${fmt(f.zakup)}</div></div>
+<div class="stat"><div class="label">Зарплата</div><div class="value">${fmt(f.salary)}</div></div>
+<div class="stat ${f.net>=0?'pos':'neg'}"><div class="label">Итог (чистыми)</div><div class="value">${fmt(f.net)}</div></div>
+<div class="stat"><div class="label">Долг поставщикам</div><div class="value">${fmt(supplierTotalUnpaid(state.branch))}</div></div>
+`;
+renderBars(document.getElementById('aggBars'), keyedToNamed(totals.agg));
+renderBars(document.getElementById('termBars'), keyedToNamed(totals.term));
+renderBars(document.getElementById('cashBars'), keyedToNamed(totals.cash));
+renderBars(document.getElementById('unpaidBars'), keyedToNamed(totals.unpaid));
+renderBars(document.getElementById('purchaseBars'), keyedToNamed(totals.expense), 10);
+const {from, to} = dateRangeForPeriod(state.period, state.branch);
+const salaryRows = salaryBreakdown(state.branch, from, to);
+const dailyObj = {}, advanceObj = {}, courierObj = {}, podzpObj = {};
+salaryRows.forEach(r=>{
+if(r.typeLabel==='ежедневная') dailyObj[r.name] = r.amount;
+else if(r.typeLabel==='аванс') advanceObj[r.name] = r.amount;
+else if(r.typeLabel==='курьер') courierObj[r.name] = r.amount;
+else if(r.typeLabel==='под зп') podzpObj[r.name] = r.amount;
+});
+renderBars(document.getElementById('salaryDailyBars'), dailyObj);
+renderBars(document.getElementById('advanceBars'), advanceObj);
+renderBars(document.getElementById('courierBars'), courierObj);
+renderBars(document.getElementById('podzpBars'), podzpObj);
+const bal = computeBalance(state.branch, state.date);
+document.getElementById('balanceBar').innerHTML = `
+<div class="stat"><div class="label">Остаток наличные</div><div class="value">${fmt(bal.cash)}</div></div>
+<div class="stat"><div class="label">Остаток Kaspi перевод</div><div class="value">${fmt(bal.kaspi)}</div></div>
+`;
+const unpaidSuppliers = branchSuppliers(state.branch).filter(s=>!s.paid);
+const supplierObj = {};
+unpaidSuppliers.forEach(s=>{ supplierObj[s.name + (s.note?' — '+s.note:'')] = (supplierObj[s.name]||0) + s.amount; });
+renderBars(document.getElementById('supplierDebtBars'), supplierObj);
+}
+/* ---------- ОТЧЁТЫ ---------- */
+const reportGroup = document.getElementById('reportGroup');
+const reportCategory = document.getElementById('reportCategory');
+const reportPeriod = document.getElementById('reportPeriod');
+const reportViewSel = document.getElementById('reportView');
+function refreshReportCategoryOptions(){
+const g = reportGroup.value;
+if(g==='all'){
+reportCategory.innerHTML = '<option value="">Все категории</option>';
+reportCategory.disabled = true;
+} else {
+reportCategory.disabled = false;
+const keys = Object.keys(COLUMNS).filter(k=>COLUMNS[k].group===g);
+reportCategory.innerHTML = '<option value="">Все категории группы</option>' +
+keys.map(k=>`<option value="${k}">${COLUMNS[k].name}</option>`).join('');
+}
+}
+[reportGroup, reportCategory, reportPeriod, reportViewSel].forEach(el=>{
+el.addEventListener('change', ()=>{ if(el===reportGroup) refreshReportCategoryOptions(); renderReport(); });
+});
+function renderReport(){
+const {totals, merged} = sumByGroup(state.branch, reportPeriod.value);
+const f = computeFormulas(merged);
+const g = reportGroup.value;
+const cat = reportCategory.value;
+let rows = [];
+if(g === 'all'){
+for(const grp in totals){
+Object.entries(totals[grp]).forEach(([key,val])=> rows.push({group:GROUP_LABELS[grp], name:COLUMNS[key].name, val}));
+}
+} else {
+Object.entries(totals[g]).forEach(([key,val])=>{
+if(!cat || cat===key) rows.push({group:GROUP_LABELS[g], name:COLUMNS[key].name, val});
+});
+}
+rows.sort((a,b)=>b.val-a.val);
+const total = rows.reduce((a,r)=>a+r.val,0);
+const gLabel = g==='all' ? 'Все категории' : GROUP_LABELS[g];
+document.getElementById('reportTitle').textContent =
+`${state.branch} · ${gLabel}${cat?' · '+COLUMNS[cat].name:''}`;
+const body = document.getElementById('reportBody');
+if(!rows.length){ body.innerHTML = '<div class="empty">Нет данных за выбранный период</div>'; return; }
+if(reportViewSel.value === 'table'){
+body.innerHTML = `<div class="table-scroll"><table><thead><tr><th>Группа</th><th>Категория</th><th style="text-align:right;">Сумма</th></tr></thead>
+<tbody>${rows.map(r=>`<tr><td>${r.group}</td><td>${r.name}</td><td class="num">${fmt(r.val)}</td></tr>`).join('')}
+<tr class="total-row"><td colspan="2">Итого</td><td class="num">${fmt(total)}</td></tr></tbody></table></div>`;
+} else {
+const maxVal = Math.max(...rows.map(r=>r.val),1);
+body.innerHTML = `<div class="bars">${rows.map(r=>`
+<div class="bar-row">
+<div class="bar-label">${r.name}</div>
+<div class="bar-track"><div class="bar-fill" style="width:${(r.val/maxVal*100).toFixed(1)}%"></div></div>
+<div class="bar-val">${fmt(r.val)}</div>
+</div>`).join('')}</div>`;
+}
+}
+document.getElementById('exportPdf').addEventListener('click', ()=> window.print());
+/* ---------- СРАВНЕНИЕ ФИЛИАЛОВ ---------- */
+document.getElementById('comparePeriod').addEventListener('change', renderCompare);
+function renderCompare(){
+const period = document.getElementById('comparePeriod').value;
+const container = document.getElementById('compareCards');
+const summaries = {};
+CONFIG.branches.forEach(b=>{
+const {merged} = sumByGroup(b, period);
+summaries[b] = computeFormulas(merged);
+});
+container.innerHTML = CONFIG.branches.map(b=>{
+const s = summaries[b];
+return `<div class="card">
+<h3>${b}</h3>
+<div class="totals-bar" style="flex-direction:column;">
+<div class="stat pos"><div class="label">Продажа</div><div class="value">${fmt(s.sales)}</div></div>
+<div class="stat"><div class="label">Расходы</div><div class="value">${fmt(s.zakup)}</div></div>
+<div class="stat"><div class="label">Зарплата</div><div class="value">${fmt(s.salary)}</div></div>
+<div class="stat ${s.net>=0?'pos':'neg'}"><div class="label">Итог</div><div class="value">${fmt(s.net)}</div></div>
+</div>
+</div>`;
+}).join('');
+if(CONFIG.branches.length >= 2){
+const [a,b] = CONFIG.branches;
+const sa = summaries[a], sb = summaries[b];
+const diffRow = (label,va,vb)=>{
+const d = va-vb;
+return `<tr><td>${label}</td><td class="num">${fmt(va)}</td><td class="num">${fmt(vb)}</td>
+<td class="num" style="color:${d>=0?'var(--green)':'var(--red)'}">${d>=0?'+':''}${fmt(d)}</td></tr>`;
+};
+document.getElementById('compareDiff').innerHTML = `
+<div class="table-scroll"><table><thead><tr><th></th><th>${a}</th><th>${b}</th><th>Разница</th></tr></thead>
+<tbody>
+${diffRow('Продажа', sa.sales, sb.sales)}
+${diffRow('Расходы', sa.zakup, sb.zakup)}
+${diffRow('Зарплата', sa.salary, sb.salary)}
+${diffRow('Итог', sa.net, sb.net)}
+</tbody></table></div>`;
+} else {
+document.getElementById('compareDiff').innerHTML = '<div class="empty">Нужно минимум 2 филиала</div>';
+}
+}
+/* ---------- НАСТРОЙКИ ---------- */
+const AVATAR_EMOJIS = ['😀','😎','🦁','🐱','🐼','☕','🍕','👩‍🍳','👨‍🍳','🧑‍💼','⭐','🔥'];
+function renderSettings(){
+document.getElementById('settingsAdminName').value = ADMIN_NAME();
+document.getElementById('settingsPin').value = ADMIN_PIN();
+const avSel = document.getElementById('settingsAvatar');
+avSel.innerHTML = AVATAR_EMOJIS.map(e=>`<option value="${e}">${e}</option>`).join('');
+avSel.value = CONFIG.adminAvatar || AVATAR_EMOJIS[0];
+document.getElementById('settingsPhone').value = CONFIG.adminPhone || '';
+document.getElementById('settingsEmail').value = CONFIG.adminEmail || '';
+document.getElementById('branchList').innerHTML = CONFIG.branches.map((b,i)=>`
+<div class="row" style="margin-bottom:8px;">
+<div style="flex:2;">${b}</div>
+<button class="ghost-btn" onclick="removeBranch(${i})" style="flex:0;">Удалить</button>
+</div>`).join('');
+renderCashierList();
+}
+const CASHIER_PERM_LABELS = { entry:'Заполнять отчёт', reports:'Смотреть отчёты', suppliers:'Поставщики' };
+function renderCashierList(){
+const box = document.getElementById('cashierList');
+const cashiers = CONFIG.cashiers || [];
+if(!cashiers.length){ box.innerHTML = '<div class="empty">Пока нет кассиров — добавь первого выше</div>'; return; }
+box.innerHTML = cashiers.map((c,i)=>`
+<div class="entry-item" data-i="${i}">
+<div class="ei-name">${c.avatar||'🙂'} <b>${c.name}</b>
+<div class="ei-note">${(c.permissions||[]).map(p=>CASHIER_PERM_LABELS[p]||p).join(', ') || 'без прав'}</div>
+</div>
+<input type="text" class="cashier-pin-edit" value="${c.pin}" maxlength="4" inputmode="numeric" style="width:70px;text-align:center;" title="PIN">
+<button class="ghost-btn cashier-del" style="flex:0;">Удалить</button>
+</div>`).join('');
+box.querySelectorAll('.entry-item').forEach(row=>{
+const i = Number(row.dataset.i);
+row.querySelector('.cashier-pin-edit').addEventListener('change', e=>{
+const pin = e.target.value.trim();
+if(!/^\d{4}$/.test(pin)){ toast('PIN должен быть из 4 цифр'); e.target.value = CONFIG.cashiers[i].pin; return; }
+CONFIG.cashiers[i].pin = pin;
+saveConfig();
+toast('Пароль кассира '+CONFIG.cashiers[i].name+' сброшен');
+});
+row.querySelector('.cashier-del').addEventListener('click', ()=>{
+if(!confirm(`Удалить кассира "${CONFIG.cashiers[i].name}"?`)) return;
+CONFIG.cashiers.splice(i,1);
+saveConfig();
+renderCashierList();
+});
+});
+}
+document.getElementById('addCashierBtn').addEventListener('click', ()=>{
+const name = document.getElementById('newCashierName').value.trim();
+const pin = document.getElementById('newCashierPin').value.trim();
+if(!name){ toast('Укажи имя кассира'); return; }
+if(!/^\d{4}$/.test(pin)){ toast('PIN должен быть из 4 цифр'); return; }
+const perms = Array.from(document.querySelectorAll('#newCashierPerms input:checked')).map(i=>i.value);
+CONFIG.cashiers = CONFIG.cashiers || [];
+CONFIG.cashiers.push({ name, pin, permissions: perms, avatar: AVATAR_EMOJIS[Math.floor(Math.random()*AVATAR_EMOJIS.length)] });
+saveConfig();
+document.getElementById('newCashierName').value='';
+document.getElementById('newCashierPin').value='';
+renderCashierList();
+toast('Кассир добавлен');
+});
+document.getElementById('saveAccessBtn').addEventListener('click', ()=>{
+const name = document.getElementById('settingsAdminName').value.trim();
+const pin = document.getElementById('settingsPin').value.trim();
+if(pin && !/^\d{4}$/.test(pin)){ toast('PIN должен быть из 4 цифр'); return; }
+if(name) CONFIG.adminName = name;
+if(pin) CONFIG.pin = pin;
+CONFIG.adminAvatar = document.getElementById('settingsAvatar').value;
+CONFIG.adminPhone = document.getElementById('settingsPhone').value.trim();
+CONFIG.adminEmail = document.getElementById('settingsEmail').value.trim();
+saveConfig();
+toast('Сохранено');
+});
+document.getElementById('addBranchBtn').addEventListener('click', ()=>{
+const name = document.getElementById('newBranchName').value.trim();
+if(!name) return;
+CONFIG.branches.push(name);
+saveConfig();
+document.getElementById('newBranchName').value='';
+renderBranchSelect();
+renderSettings();
+toast('Филиал добавлен');
+});
+function removeBranch(i){
+if(CONFIG.branches.length<=1){ alert('Должен остаться хотя бы 1 филиал'); return; }
+CONFIG.branches.splice(i,1);
+saveConfig();
+if(state.branch === undefined || !CONFIG.branches.includes(state.branch)) state.branch = CONFIG.branches[0];
+renderBranchSelect();
+renderSettings();
+}
+/* ---------- СТАРТ ---------- */
+function renderAll(){
+renderBranchSelect();
+renderEntryFields();
+renderDashboard();
+refreshReportCategoryOptions();
+renderReport();
+renderCompare();
+renderSettings();
+renderSuppliers();
+}
+/* ---------- ВХОД: ПАРОЛЬ / ФИЛИАЛ / ПРИВЕТСТВИЕ ---------- */
+const ADMIN_PIN = () => '2767'; // единый пароль, без завязки на настройки
+const ADMIN_NAME = () => CONFIG.adminName || 'Альбина';
+let pinBuffer = '';
+function renderPinDots(){
+document.getElementById('pinDots').innerHTML =
+Array.from({length:4}).map((_,i)=>`<div class="pin-dot ${i<pinBuffer.length?'filled':''}"></div>`).join('');
+}
+function renderPinPad(){
+const keys = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
+document.getElementById('pinPad').innerHTML = keys.map(k=>
+k==='' ? `<div></div>` : `<button class="pin-key" data-k="${k}">${k}</button>`
+).join('');
+document.querySelectorAll('.pin-key').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const k = btn.dataset.k;
+if(k==='⌫'){ pinBuffer = pinBuffer.slice(0,-1); }
+else if(pinBuffer.length<4){ pinBuffer += k; }
+renderPinDots();
+document.getElementById('pinError').textContent='';
+if(pinBuffer.length===4){
+if(pinBuffer===ADMIN_PIN()){
+currentUser = null; // главный админ — видит всё
+document.getElementById('gateLogin').style.display='none';
+document.getElementById('gateBranch').style.display='flex';
+renderBranchGate();
+} else {
+const cashier = (CONFIG.cashiers||[]).find(c=>c.pin===pinBuffer);
+if(cashier){
+currentUser = cashier;
+document.getElementById('gateLogin').style.display='none';
+document.getElementById('gateBranch').style.display='flex';
+renderBranchGate();
+} else {
+document.getElementById('pinError').textContent='Неверный пароль';
+setTimeout(()=>{ pinBuffer=''; renderPinDots(); }, 500);
+}
+}
+}
+});
+});
+}
+renderPinDots();
+renderPinPad();
+let currentUser = null; // null = главный админ, иначе объект кассира {name,pin,permissions,avatar}
+document.getElementById('pinPad').style.opacity = '0.5';
+document.getElementById('pinPad').style.pointerEvents = 'none';
+document.getElementById('pinError').textContent = 'Загрузка…';
+loadConfigFromServer().finally(()=>{
+document.getElementById('pinPad').style.opacity = '';
+document.getElementById('pinPad').style.pointerEvents = '';
+document.getElementById('pinError').textContent = '';
+});
+function renderBranchGate(){
+document.getElementById('branchGrid').innerHTML = CONFIG.branches.map(b=>
+`<div class="branch-tile" data-b="${b}">${b}</div>`).join('');
+document.querySelectorAll('.branch-tile').forEach(tile=>{
+tile.addEventListener('click', ()=>{
+state.branch = tile.dataset.b;
+document.getElementById('gateBranch').style.display='none';
+document.getElementById('gateWelcome').style.display='flex';
+const name = currentUser ? currentUser.name : ADMIN_NAME();
+const avatar = currentUser ? (currentUser.avatar||'🙂') : (CONFIG.adminAvatar||'🙂');
+document.getElementById('welcomeTitle').textContent = `${avatar} Привет, ${name}!`;
+document.getElementById('welcomeSub').textContent = `Филиал: ${state.branch}. Что делаем?`;
+applyPermissions();
+});
+});
+}
+function applyPermissions(){
+const goEntry = document.getElementById('goEntryBtn');
+const goReports = document.getElementById('goReportsBtn');
+if(!currentUser){
+document.querySelectorAll('.side-link[data-view]').forEach(l=> l.style.display='');
+goEntry.style.display=''; goReports.style.display='';
+return;
+}
+const perms = currentUser.permissions || [];
+const canEntry = perms.includes('entry');
+const canReports = perms.includes('reports');
+const canSuppliers = perms.includes('suppliers');
+goEntry.style.display = canEntry ? '' : 'none';
+goReports.style.display = canReports ? '' : 'none';
+document.querySelectorAll('.side-link[data-view]').forEach(l=>{
+const v = l.dataset.view;
+let ok = true;
+if(v==='entry') ok = canEntry;
+else if(v==='reports' || v==='fullreport' || v==='history') ok = canReports;
+else if(v==='suppliers') ok = canSuppliers;
+else if(v==='settings') ok = false; // настройки — только у главного админа
+l.style.display = ok ? '' : 'none';
+});
+}
+document.getElementById('goEntryBtn').addEventListener('click', ()=> enterApp('entry'));
+document.getElementById('goReportsBtn').addEventListener('click', ()=> enterApp('fullreport'));
+async function enterApp(viewName){
+document.getElementById('gateWelcome').style.display='none';
+document.getElementById('appRoot').style.display='block';
+renderAll();
+applyPermissions();
+document.querySelectorAll('.side-link').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+const link = document.querySelector(`.side-link[data-view="${viewName}"]`);
+if(link){ link.classList.add('active'); document.getElementById('pageTitle').textContent = PAGE_TITLES[viewName] || link.textContent; }
+document.getElementById('view-'+viewName).classList.add('active');
+currentView = viewName;
+if(viewName==='fullreport') renderDashboard();
+if(viewName==='entry') renderEntryFields();
+await loadFromServer();
+renderAll();
+if(viewName==='fullreport') renderDashboard();
+if(viewName==='entry') renderEntryFields();
+checkYesterdayReminder();
+startAutoSync();
+}
+/* ---------- АВТОМАТИЧЕСКАЯ ФОНОВАЯ СИНХРОНИЗАЦИЯ С ТАБЛИЦЕЙ ----------
+Каждые 10 секунд тихо перечитываем всю таблицу — если админ что-то поправил
+руками прямо в Google Sheets, это подтянется на сайт само, без нажатия ↻. */
+let autoSyncTimer = null;
+function startAutoSync(){
+if(autoSyncTimer) return; // уже запущено
+autoSyncTimer = setInterval(async ()=>{
+if(serverSyncing || pendingWrites>0) return; // не накладываем запросы друг на друга и не затираем то, что ещё дописывается
+await loadFromServer(true);
+renderDashboard();
+renderReport();
+renderCompare();
+renderSuppliers();
+renderHistory();
+}, 10000);
+}
+document.addEventListener('visibilitychange', ()=>{
+if(!document.hidden && autoSyncTimer && pendingWrites===0){
+loadFromServer(true).then(()=>{
+renderDashboard();
+renderReport();
+renderCompare();
+renderSuppliers();
+renderHistory();
+});
+}
+});
+const YESTERDAY_JOKES = [
+'Вчерашний отчёт по филиалу «{branch}» так и не появился — он там сам себя не заполнит 🙂',
+'Кажется, вчера кто-то забыл про отчёт по «{branch}»... бывает, дела закрутили. Заполним сейчас?',
+'Ку-ку! За вчера по «{branch}» пусто. Может, вчера был особенно горячий день — но цифры от этого не появятся сами 😅',
+'Вчера «{branch}» словно не работал — по документам. Наверняка работал, просто отчёт забыли внести.'
+];
+function checkYesterdayReminder(){
+const banner = document.getElementById('yesterdayReminder');
+const y = new Date(state.date+'T00:00:00'); y.setDate(y.getDate()-1);
+const yStr = y.toISOString().slice(0,10);
+const branchData = (DATA[state.branch] || {})[yStr];
+const hasAny = branchData && Object.values(branchData).some(list=> Array.isArray(list) && list.length>0);
+if(hasAny){ banner.style.display='none'; return; }
+const msg = YESTERDAY_JOKES[Math.floor(Math.random()*YESTERDAY_JOKES.length)].replace('{branch}', state.branch);
+document.getElementById('yesterdayReminderText').textContent = msg + ` (${yStr})`;
+banner.style.display='';
+}
+document.getElementById('yesterdayReminderClose').addEventListener('click', ()=>{
+document.getElementById('yesterdayReminder').style.display='none';
+});
+document.getElementById('yesterdayReminderFill').addEventListener('click', ()=>{
+const y = new Date(state.date+'T00:00:00'); y.setDate(y.getDate()-1);
+state.date = y.toISOString().slice(0,10);
+document.getElementById('dateSelect').value = state.date;
+document.getElementById('yesterdayReminder').style.display='none';
+document.querySelectorAll('.side-link').forEach(t=>t.classList.remove('active'));
+document.querySelector('.side-link[data-view="entry"]').classList.add('active');
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+document.getElementById('view-entry').classList.add('active');
+document.getElementById('pageTitle').textContent = 'Заполнить отчёт';
+renderEntryFields();
+});
+</script>
+</body>
+</html>
