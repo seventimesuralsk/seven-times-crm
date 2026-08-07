@@ -368,7 +368,7 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 </div>
 <div class="header-icons">
 <select id="branchSelect" class="branch-select" style="width:auto;"></select>
-<input type="date" id="dateSelect" style="width:auto;">
+<input type="date" id="dateSelect" style="display:none;">
 <button class="icon-btn hamburger-btn" id="hamburgerBtn" title="Меню"><span class="hamburger-bars"><span></span><span></span></span></button>
 </div>
 </header>
@@ -383,8 +383,9 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 
 <div class="view" id="view-entry">
 <div class="card" style="background:var(--blue);color:#fff;">
-<div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.04em;">Заполняешь отчёт за</div>
-<div id="entryDateBanner" style="font-size:22px;font-weight:700;"></div>
+<div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.04em;">На какой день заполняем отчёт?</div>
+<div id="entryDateBanner" style="font-size:22px;font-weight:700;margin-bottom:10px;"></div>
+<input type="date" id="entryDateInput" style="background:#fff;color:var(--ink);border:none;width:100%;font-size:16px;font-weight:600;">
 </div>
 <div class="card">
 <h3>Отчёт за день</h3>
@@ -1049,6 +1050,7 @@ return n.toLocaleString('ru-RU') + ' ₸';
 const branchSelect = document.getElementById('branchSelect');
 const dateSelect = document.getElementById('dateSelect');
 dateSelect.max = new Date().toISOString().slice(0,10); // нельзя выбрать день, который ещё не наступил
+dateSelect.min = '2026-01-01'; // и раньше 2026 года тоже нельзя
 function renderBranchSelect(){
 branchSelect.innerHTML = CONFIG.branches.map(b=>`<option value="${b}">${b}</option>`).join('');
 branchSelect.value = state.branch;
@@ -1614,7 +1616,26 @@ const today = new Date().toISOString().slice(0,10);
 const isToday = state.date === today;
 banner.textContent = d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + (isToday ? ' (сегодня)' : ' ⚠️ не сегодня');
 }
+const entryDateInput = document.getElementById('entryDateInput');
+if(entryDateInput){
+entryDateInput.max = new Date().toISOString().slice(0,10);
+entryDateInput.min = '2026-01-01';
+entryDateInput.value = state.date;
 }
+}
+document.getElementById('entryDateInput').addEventListener('change', e=>{
+if(!e.target.value) return;
+const y = Number(e.target.value.slice(0,4));
+const maxY = new Date().getFullYear();
+if(y>maxY || y<2026){
+toast('Доступны только даты 2026 года и не позже сегодняшнего дня');
+e.target.value = state.date;
+return;
+}
+state.date = e.target.value;
+dateSelect.value = state.date;
+renderEntryFields();
+});
 /* ---------- ВВОД: ТЕКСТОВЫЙ ПАРСЕР (заточен под реальные "рваные" отчёты кассиров) ---------- */
 function normalize(s){
 let t = s.toLowerCase()
@@ -2013,9 +2034,9 @@ function renderPeriodExtra(){
 const box = document.getElementById('periodExtra');
 const today = new Date(state.date+'T00:00:00');
 if(state.period === 'daily'){
-box.innerHTML = `<div class="row no-print">
-<input type="date" id="dailyFrom" value="${state.dailyFrom||''}">
-<input type="date" id="dailyTo" value="${state.dailyTo||''}">
+box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
+<input type="date" id="dailyFrom" value="${state.dailyFrom||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="dailyTo" value="${state.dailyTo||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
 </div>`;
 const apply = ()=>{
 state.dailyFrom = document.getElementById('dailyFrom').value;
@@ -2029,9 +2050,9 @@ return;
 if(state.period === 'month'){
 const m = state.monthSel!==undefined ? state.monthSel : today.getMonth();
 const y = state.monthYearSel!==undefined ? state.monthYearSel : today.getFullYear();
-box.innerHTML = `<div class="row no-print">
-<select id="monthSelect">${MONTH_NAMES_RU.map((name,i)=>`<option value="${i}" ${i===m?'selected':''}>${name}</option>`).join('')}</select>
-<input type="number" id="monthYear" value="${y}" max="${new Date().getFullYear()}" style="max-width:110px;">
+box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
+<select id="monthSelect" style="background:#fff;border:1.5px solid var(--line2);">${MONTH_NAMES_RU.map((name,i)=>`<option value="${i}" ${i===m?'selected':''}>${name}</option>`).join('')}</select>
+<input type="number" id="monthYear" value="${y}" max="${new Date().getFullYear()}" style="max-width:110px;background:#fff;border:1.5px solid var(--line2);">
 </div>`;
 document.getElementById('monthSelect').addEventListener('change', e=>{
 const today = new Date();
@@ -2051,9 +2072,9 @@ renderDashboard();
 return;
 }
 if(state.period === 'range'){
-box.innerHTML = `<div class="row no-print">
-<input type="date" id="rangeFrom" value="${state.rangeFrom||''}">
-<input type="date" id="rangeTo" value="${state.rangeTo||''}">
+box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
+<input type="date" id="rangeFrom" value="${state.rangeFrom||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="rangeTo" value="${state.rangeTo||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
 </div>`;
 const apply = ()=>{
 state.rangeFrom = document.getElementById('rangeFrom').value;
