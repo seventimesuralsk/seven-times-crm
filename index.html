@@ -117,9 +117,13 @@ font-size:17px;cursor:pointer;color:var(--ink);flex-shrink:0;display:flex;align-
 .hamburger-bars span{display:block;width:100%;height:1.6px;background:currentColor;border-radius:2px;transition:transform .2s ease;}
 #hamburgerBtn.open .hamburger-bars span:first-child{transform:translateY(5.7px) rotate(45deg);}
 #hamburgerBtn.open .hamburger-bars span:last-child{transform:translateY(-5.7px) rotate(-45deg);}
-.view{display:none;animation:fade .25s ease;}
-.view.active{display:block;}
-@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.view{display:none;}
+.view.active{display:block;animation:fade .3s cubic-bezier(.22,1,.36,1);}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+*{transition:background-color .2s ease, border-color .2s ease, color .15s ease, opacity .2s ease, transform .2s cubic-bezier(.4,0,.2,1), box-shadow .2s ease;}
+input,textarea,select{transition:background-color .15s ease, border-color .15s ease, box-shadow .15s ease;}
+button,.pick-chip,.chip,.side-link,.mode-btn,.acc-item,.icon-btn,.tab{transition:background-color .18s ease, color .18s ease, transform .12s ease, box-shadow .18s ease;}
+button:active,.pick-chip:active,.chip:active,.side-link:active,.mode-btn:active,.acc-item:active,.icon-btn:active{transform:scale(.96);}
 .card{
 background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
 padding:18px;margin-bottom:12px;box-shadow:var(--shadow);
@@ -171,7 +175,7 @@ tr.total-row td{font-weight:700;border-top:2px solid var(--ink);}
 .bar-row{display:flex;align-items:center;gap:10px;}
 .bar-label{width:150px;font-size:13px;color:var(--sub);flex-shrink:0;}
 .bar-track{flex:1;background:var(--surface2);border-radius:8px;height:22px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#0071e3,#5ac8fa);}
+.bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#0071e3,#5ac8fa);transition:width .6s cubic-bezier(.22,1,.36,1);}
 .bar-val{width:90px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums;flex-shrink:0;}
 .branch-compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 @media (max-width:640px){.branch-compare{grid-template-columns:1fr;}}
@@ -288,8 +292,9 @@ font-size:13.5px;font-weight:600;color:var(--ink);cursor:pointer;
 .acc-group-header .chev{transition:transform .25s ease;color:var(--sub);font-size:13px;}
 .acc-group.open .acc-group-header{color:var(--blue);}
 .acc-group.open .acc-group-header .chev{transform:rotate(90deg);color:var(--blue);}
-.acc-sublist{max-height:0;overflow:hidden;transition:max-height .3s cubic-bezier(.4,0,.2,1);}
-.acc-group.open .acc-sublist{max-height:800px;}
+.acc-sublist{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.4,0,.2,1);}
+.acc-sublist > div{overflow:hidden;min-height:0;}
+.acc-group.open .acc-sublist{grid-template-rows:1fr;}
 .acc-item{padding:12px 4px 12px 16px;font-size:14px;color:var(--ink);cursor:pointer;border-top:1px solid var(--line);-webkit-tap-highlight-color:transparent;}
 .acc-item:active{background:var(--surface2);}
 .acc-item.active{background:var(--blue);color:#fff;font-weight:600;}
@@ -316,11 +321,15 @@ flex-wrap:wrap;
 .modal-backdrop{
 position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:400;
 display:flex;align-items:center;justify-content:center;padding:20px;
+animation:modalFade .2s ease;
 }
 .modal-box{
-background:var(--card);border-radius:8px;padding:22px;max-width:420px;width:100%;
-max-height:80vh;overflow:auto;box-shadow:var(--shadow);
+background:var(--card);border-radius:14px;padding:22px;max-width:420px;width:100%;
+max-height:80vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);
+animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 }
+@keyframes modalFade{from{opacity:0;}to{opacity:1;}}
+@keyframes modalPop{from{opacity:0;transform:scale(.92) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
 .modal-box h3{margin-top:0;}
 .modal-actions{display:flex;gap:10px;margin-top:16px;}
 .modal-actions button{flex:1;padding:12px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;}
@@ -367,6 +376,9 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 <div class="side-link" data-view="reports" data-report-group="courier">Курьеры</div>
 <div class="side-link" data-view="reports" data-report-group="podzp">Под ЗП</div>
 <div class="side-group-title">Прочее</div>
+<div class="side-link" id="presentationLink" style="background:linear-gradient(135deg,#0071e3,#5ac8fa);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:space-between;">
+<span>🎁 Презентация</span><span style="font-size:11px;opacity:.85;">🔒</span>
+</div>
 <div class="side-link" data-view="settings">Настройки</div>
 <div class="side-link" id="logoutLink" style="color:var(--red);margin-top:10px;">Выйти</div>
 </nav>
@@ -690,6 +702,56 @@ max-height:80vh;overflow:auto;box-shadow:var(--shadow);
 </div>
 </div>
 </div>
+
+<div class="view" id="view-presentation">
+<div class="card" style="background:linear-gradient(135deg,#0071e3,#5ac8fa);color:#fff;text-align:center;padding:28px 18px;">
+<div style="font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:.08em;">Seven Times · Coffee & Kitchen</div>
+<div style="font-size:24px;font-weight:800;margin-top:4px;" id="presTitle">Презентация</div>
+<div style="font-size:13px;opacity:.9;margin-top:4px;" id="presSubtitle"></div>
+</div>
+
+<div class="period-chips" id="presPeriodChips">
+<div class="chip active" data-period="7">7 дней</div>
+<div class="chip" data-period="15">15 дней</div>
+<div class="chip" data-period="month">Месяц</div>
+<div class="chip" data-period="range">Период</div>
+</div>
+<div class="row no-print" id="presRangeRow" style="display:none;margin-bottom:16px;">
+<input type="date" id="presRangeFrom">
+<input type="date" id="presRangeTo">
+</div>
+
+<div class="card" style="text-align:center;">
+<div style="font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;">Общая продажа по всем филиалам</div>
+<div style="font-size:34px;font-weight:800;margin:6px 0;" id="presTotalSales">—</div>
+<div style="font-size:13px;color:var(--sub);" id="presTotalNet"></div>
+</div>
+
+<div class="card">
+<h3>🏆 Сравнение филиалов</h3>
+<div id="presBranchCompare"></div>
+</div>
+
+<div class="card">
+<h3>Продажи по каналам</h3>
+<div class="bars" id="presChannelBars"></div>
+</div>
+
+<div class="card">
+<h3>Топ расходов</h3>
+<div class="bars" id="presExpenseBars"></div>
+</div>
+
+<div class="card">
+<h3>Зарплатный фонд</h3>
+<div class="totals-bar" id="presSalaryStats"></div>
+</div>
+
+<div class="footer-actions no-print">
+<button class="ghost-btn" id="presPdfBtn">🖨️ Печать / PDF для встречи</button>
+</div>
+</div>
+
 <script>
 /* ---------- ДАННЫЕ / КОНФИГ ---------- */
 const STORAGE_KEY = 'st_crm_data_v1';
@@ -1340,6 +1402,152 @@ document.getElementById('mode-manual').style.display = state.mode==='manual' ? '
 document.getElementById('mode-text').style.display = state.mode==='text' ? '' : 'none';
 });
 });
+/* ---------- ПРЕЗЕНТАЦИЯ (закрыта паролем разработчика, подарок для Альбины) ---------- */
+let presentationUnlocked = false;
+const presState = { period:'7', rangeFrom:'', rangeTo:'' };
+document.getElementById('presentationLink').addEventListener('click', ()=>{
+if(!presentationUnlocked){
+const pass = prompt('Этот раздел готовится специально для тебя 🎁\nВведи пароль, чтобы открыть:');
+if(pass !== TEXT_MODE_DEV_PASSWORD){
+if(pass !== null) toast('Неверный пароль');
+return;
+}
+presentationUnlocked = true;
+document.getElementById('presentationLink').innerHTML = '<span>🎁 Презентация</span>';
+}
+document.querySelectorAll('.side-link').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+document.getElementById('view-presentation').classList.add('active');
+document.getElementById('pageTitle').textContent = 'Презентация';
+closeSidebar();
+renderPresentation();
+});
+document.querySelectorAll('#presPeriodChips .chip').forEach(chip=>{
+chip.addEventListener('click', ()=>{
+document.querySelectorAll('#presPeriodChips .chip').forEach(c=>c.classList.remove('active'));
+chip.classList.add('active');
+presState.period = chip.dataset.period;
+document.getElementById('presRangeRow').style.display = presState.period==='range' ? 'flex' : 'none';
+renderPresentation();
+});
+});
+function presApplyRange(){
+presState.rangeFrom = document.getElementById('presRangeFrom').value;
+presState.rangeTo = document.getElementById('presRangeTo').value;
+if(presState.rangeFrom && presState.rangeTo) renderPresentation();
+}
+document.getElementById('presRangeFrom').addEventListener('change', presApplyRange);
+document.getElementById('presRangeTo').addEventListener('change', presApplyRange);
+
+function presDateRange(){
+const today = new Date(localDateStr()+'T00:00:00');
+let from = new Date(today), to = new Date(today);
+const p = presState.period;
+if(p==='7'){ from.setDate(from.getDate()-6); }
+else if(p==='15'){ from.setDate(from.getDate()-14); }
+else if(p==='month'){ from = new Date(today.getFullYear(), today.getMonth(), 1); to = new Date(today.getFullYear(), today.getMonth()+1, 0); }
+else if(p==='range'){
+from = new Date(presState.rangeFrom || localDateStr());
+to = new Date(presState.rangeTo || localDateStr());
+}
+return {from, to};
+}
+function presPeriodLabel(){
+const {from,to} = presDateRange();
+const f = d=> d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+return f(from) + ' — ' + f(to);
+}
+
+function renderPresentation(){
+const {from, to} = presDateRange();
+document.getElementById('presSubtitle').textContent = presPeriodLabel();
+
+const branchSums = {};
+let totalSales = 0, totalNet = 0;
+CONFIG.branches.forEach(b=>{
+const {totals, merged} = sumByGroupRange(b, from, to);
+const f = computeFormulas(merged);
+branchSums[b] = f;
+totalSales += f.sales;
+totalNet += f.net;
+});
+
+document.getElementById('presTotalSales').textContent = fmt(totalSales);
+document.getElementById('presTotalNet').textContent = 'Чистыми (после расходов и зарплаты): ' + fmt(totalNet);
+
+// --- сравнение филиалов: кто лидер и на сколько отстаёт ---
+const sortedBranches = [...CONFIG.branches].sort((a,b)=> branchSums[b].sales - branchSums[a].sales);
+const leader = sortedBranches[0];
+const compareHtml = sortedBranches.map((b,i)=>{
+const f = branchSums[b];
+const share = totalSales>0 ? (f.sales/totalSales*100) : 0;
+let diffLabel = '';
+if(i===0 && sortedBranches.length>1){
+const other = branchSums[sortedBranches[1]];
+const diffPct = other.sales>0 ? ((f.sales-other.sales)/other.sales*100) : 0;
+diffLabel = `<span style="color:var(--green);font-weight:700;">🏆 Лидер · впереди на ${diffPct.toFixed(1)}%</span>`;
+} else if(i>0){
+const leaderSales = branchSums[leader].sales;
+const diffPct = leaderSales>0 ? ((leaderSales-f.sales)/leaderSales*100) : 0;
+diffLabel = `<span style="color:var(--red);font-weight:600;">отстаёт на ${diffPct.toFixed(1)}%</span>`;
+}
+return `<div style="padding:14px 0;border-top:${i>0?'1px solid var(--line)':'none'};">
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+<div style="font-size:16px;font-weight:700;">${b}</div>
+<div style="font-size:20px;font-weight:800;">${fmt(f.sales)}</div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<div style="font-size:12.5px;color:var(--sub);">Доля от общего: ${share.toFixed(1)}% · Итог чистыми: ${fmt(f.net)}</div>
+${diffLabel}
+</div>
+<div class="bar-track" style="margin-top:8px;"><div class="bar-fill" data-w="${share.toFixed(1)}" style="width:0%;"></div></div>
+</div>`;
+}).join('');
+document.getElementById('presBranchCompare').innerHTML = compareHtml;
+requestAnimationFrame(()=> requestAnimationFrame(()=>{
+document.querySelectorAll('#presBranchCompare .bar-fill').forEach(el=>{ el.style.width = el.dataset.w + '%'; });
+}));
+
+// --- продажи по каналам, суммарно по всем филиалам ---
+const channelTotals = {};
+CONFIG.branches.forEach(b=>{
+const {totals} = sumByGroupRange(b, from, to);
+['agg','term','cash','unpaid'].forEach(g=>{
+Object.entries(totals[g]||{}).forEach(([k,v])=>{
+const name = COLUMNS[k] ? COLUMNS[k].name : k;
+channelTotals[name] = (channelTotals[name]||0) + v;
+});
+});
+});
+renderBars(document.getElementById('presChannelBars'), channelTotals);
+
+// --- топ расходов, суммарно ---
+const expenseTotals = {};
+CONFIG.branches.forEach(b=>{
+const {totals} = sumByGroupRange(b, from, to);
+Object.entries(totals.expense||{}).forEach(([k,v])=>{
+const name = COLUMNS[k] ? COLUMNS[k].name : k;
+expenseTotals[name] = (expenseTotals[name]||0) + v;
+});
+});
+renderBars(document.getElementById('presExpenseBars'), expenseTotals, 8);
+
+// --- зарплатный фонд, суммарно ---
+let salaryDaily=0, advance=0, courier=0, podzp=0;
+CONFIG.branches.forEach(b=>{
+const {merged} = sumByGroupRange(b, from, to);
+const f = computeFormulas(merged);
+salaryDaily += f.salaryDaily; advance += f.advance; courier += f.courier; podzp += f.podzp;
+});
+document.getElementById('presSalaryStats').innerHTML = `
+<div class="stat"><div class="label">Ежедневные</div><div class="value">${fmt(salaryDaily)}</div></div>
+<div class="stat"><div class="label">Авансы</div><div class="value">${fmt(advance)}</div></div>
+<div class="stat"><div class="label">Курьеры</div><div class="value">${fmt(courier)}</div></div>
+<div class="stat"><div class="label">Под ЗП</div><div class="value">${fmt(podzp)}</div></div>
+`;
+}
+document.getElementById('presPdfBtn').addEventListener('click', ()=> window.print());
+
 function currentDayData(){
 DATA[state.branch] = DATA[state.branch] || {};
 DATA[state.branch][state.date] = DATA[state.branch][state.date] || {};
@@ -1474,7 +1682,7 @@ return html;
 }).join('');
 return `<div class="acc-group ${g===guidedGroup?'open':''}" data-g="${g}">
 <div class="acc-group-header"><span>${GROUP_LABELS[g]}</span><span class="chev">▶</span></div>
-<div class="acc-sublist">${newCatHtml}${itemsHtml}</div>
+<div class="acc-sublist"><div>${newCatHtml}${itemsHtml}</div></div>
 </div>`;
 }).join('');
 
@@ -2035,6 +2243,9 @@ return {from, to};
 }
 function sumByGroup(branch, period){
 const {from, to} = dateRangeForPeriod(period, branch);
+return sumByGroupRange(branch, from, to);
+}
+function sumByGroupRange(branch, from, to){
 const branchData = DATA[branch] || {};
 const totals = {};
 GROUP_ORDER.forEach(g=> totals[g]={});
@@ -2159,9 +2370,14 @@ const maxVal = Math.max(...top.map(e=>e[1]), 1);
 container.innerHTML = top.map(([name,val])=>`
 <div class="bar-row">
 <div class="bar-label">${name}</div>
-<div class="bar-track"><div class="bar-fill" style="width:${(val/maxVal*100).toFixed(1)}%"></div></div>
+<div class="bar-track"><div class="bar-fill" data-w="${(val/maxVal*100).toFixed(1)}" style="width:0%"></div></div>
 <div class="bar-val">${fmt(val)}</div>
 </div>`).join('');
+requestAnimationFrame(()=>{
+requestAnimationFrame(()=>{
+container.querySelectorAll('.bar-fill').forEach(el=>{ el.style.width = el.dataset.w + '%'; });
+});
+});
 }
 function keyedToNamed(obj){
 const out = {};
