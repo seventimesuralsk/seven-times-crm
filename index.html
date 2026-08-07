@@ -924,7 +924,7 @@ catch(err){ toast('Не сохранилось на сервере'); console.er
 finally{ pendingWrites--; }
 }
 /* ---------- ПОСТАВЩИКИ: UI ---------- */
-document.getElementById('supDate').value = new Date().toISOString().slice(0,10);
+document.getElementById('supDate').value = localDateStr();
 function populateSupNameSelect(){
 const sel = document.getElementById('supNameSelect');
 const items = Object.values(COLUMNS)
@@ -1020,7 +1020,7 @@ const s = branchSuppliers(state.branch).find(x=>x.id===id);
 if(!s) return;
 document.getElementById('payWho').textContent = `${s.name} · накладная от ${s.date}${s.note?' · '+s.note:''}`;
 document.getElementById('payAmount').value = s.amount;
-document.getElementById('payDate').value = new Date().toISOString().slice(0,10);
+document.getElementById('payDate').value = localDateStr();
 document.getElementById('payMethod').value = 'Перевод';
 document.getElementById('payModal').style.display='flex';
 }
@@ -1059,7 +1059,7 @@ return cols.reduce((s,c)=> s + Number(entries[c]||0), 0);
 let currentView = null;
 let state = {
 branch: CONFIG.branches[0],
-date: new Date().toISOString().slice(0,10),
+date: localDateStr(),
 mode: 'manual',
 period: 'day',
 rangeFrom: null,
@@ -1071,6 +1071,15 @@ t.textContent = msg;
 t.classList.add('show');
 setTimeout(()=>t.classList.remove('show'), 1800);
 }
+// Дата "сегодня" по МЕСТНОМУ времени устройства (не через toISOString — тот вернёт
+// UTC и рано утром в часовых поясах восточнее UTC покажет вчерашнюю дату).
+function localDateStr(d){
+d = d || new Date();
+const y = d.getFullYear();
+const m = String(d.getMonth()+1).padStart(2,'0');
+const day = String(d.getDate()).padStart(2,'0');
+return y+'-'+m+'-'+day;
+}
 function fmt(n){
 n = Math.round(Number(n)||0);
 return n.toLocaleString('ru-RU') + ' ₸';
@@ -1078,7 +1087,7 @@ return n.toLocaleString('ru-RU') + ' ₸';
 /* ---------- ШАПКА: филиал / дата ---------- */
 const branchSelect = document.getElementById('branchSelect');
 const dateSelect = document.getElementById('dateSelect');
-dateSelect.max = new Date().toISOString().slice(0,10); // нельзя выбрать день, который ещё не наступил
+dateSelect.max = localDateStr(); // нельзя выбрать день, который ещё не наступил
 dateSelect.min = '2026-01-01'; // и раньше 2026 года тоже нельзя
 function renderBranchSelect(){
 branchSelect.innerHTML = CONFIG.branches.map(b=>`<option value="${b}">${b}</option>`).join('');
@@ -1128,7 +1137,7 @@ if(link.dataset.view==='suppliers') renderSuppliers();
 document.getElementById('frPdfBtn').addEventListener('click', ()=>{
 const {from, to} = dateRangeForPeriod(state.period, state.branch);
 const generatedAt = new Date().toLocaleString('ru-RU');
-const docNo = 'SVN-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + Math.floor(Math.random()*900+100);
+const docNo = 'SVN-' + localDateStr().replace(/-/g,'') + '-' + Math.floor(Math.random()*900+100);
 const {merged} = sumRangeForBranchLocal(state.branch, from, to);
 const f = computeFormulas(merged);
 const salaryRows = salaryBreakdown(state.branch, from, to);
@@ -1631,7 +1640,7 @@ renderEnteredList();
 const banner = document.getElementById('entryDateBanner');
 if(banner){
 const d = new Date(state.date+'T00:00:00');
-const today = new Date().toISOString().slice(0,10);
+const today = localDateStr();
 const isToday = state.date === today;
 banner.textContent = d.toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'}) + (isToday ? ' (сегодня)' : '');
 }
@@ -1647,18 +1656,18 @@ document.getElementById('entryDateGate').style.display = '';
 document.getElementById('entryFormBody').style.display = 'none';
 const today = new Date();
 const y = new Date(today); y.setDate(y.getDate()-1);
-const todayStr = today.toISOString().slice(0,10);
-const yStr = y.toISOString().slice(0,10);
+const todayStr = localDateStr(today);
+const yStr = localDateStr(y);
 document.getElementById('gateTodayHint').textContent = fmtShortDate(todayStr);
 document.getElementById('gateYesterdayHint').textContent = fmtShortDate(yStr);
 const custom = document.getElementById('gateCustomDate');
-custom.max = todayStr; custom.min = '2026-01-01'; custom.value = '';
+custom.max = todayStr; custom.min = '2026-01-01'; custom.value = todayStr;
 }
 function confirmEntryDate(dateStr){
 if(!dateStr) return;
 const y = Number(dateStr.slice(0,4));
 const maxY = new Date().getFullYear();
-const todayStr = new Date().toISOString().slice(0,10);
+const todayStr = localDateStr();
 if(y>maxY || y<2026 || dateStr>todayStr){
 toast('Доступны только даты 2026 года и не позже сегодняшнего дня');
 return;
@@ -1669,13 +1678,16 @@ document.getElementById('entryDateGate').style.display = 'none';
 document.getElementById('entryFormBody').style.display = '';
 renderEntryFields();
 }
-document.getElementById('gateTodayBtn').addEventListener('click', ()=> confirmEntryDate(new Date().toISOString().slice(0,10)));
+document.getElementById('gateTodayBtn').addEventListener('click', ()=> confirmEntryDate(localDateStr()));
 document.getElementById('gateYesterdayBtn').addEventListener('click', ()=>{
 const y = new Date(); y.setDate(y.getDate()-1);
-confirmEntryDate(y.toISOString().slice(0,10));
+confirmEntryDate(localDateStr(y));
 });
 document.getElementById('gateCustomBtn').addEventListener('click', ()=> confirmEntryDate(document.getElementById('gateCustomDate').value));
-document.getElementById('changeEntryDateBtn').addEventListener('click', openEntryDateGate);
+document.getElementById('changeEntryDateBtn').addEventListener('click', ()=>{
+document.getElementById('view-entry').classList.add('active');
+openEntryDateGate();
+});
 
 /* ---------- ВВОД: ТЕКСТОВЫЙ ПАРСЕР (заточен под реальные "рваные" отчёты кассиров) ---------- */
 function normalize(s){
@@ -2076,8 +2088,8 @@ const box = document.getElementById('periodExtra');
 const today = new Date(state.date+'T00:00:00');
 if(state.period === 'daily'){
 box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
-<input type="date" id="dailyFrom" value="${state.dailyFrom||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
-<input type="date" id="dailyTo" value="${state.dailyTo||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="dailyFrom" value="${state.dailyFrom||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="dailyTo" value="${state.dailyTo||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
 </div>`;
 const apply = ()=>{
 state.dailyFrom = document.getElementById('dailyFrom').value;
@@ -2114,8 +2126,8 @@ return;
 }
 if(state.period === 'range'){
 box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
-<input type="date" id="rangeFrom" value="${state.rangeFrom||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
-<input type="date" id="rangeTo" value="${state.rangeTo||''}" max="${new Date().toISOString().slice(0,10)}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="rangeFrom" value="${state.rangeFrom||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="rangeTo" value="${state.rangeTo||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
 </div>`;
 const apply = ()=>{
 state.rangeFrom = document.getElementById('rangeFrom').value;
@@ -2161,7 +2173,7 @@ const branchData = DATA[state.branch] || {};
 const days = [];
 const cur = new Date(from);
 while(cur <= to){
-const key = cur.toISOString().slice(0,10);
+const key = localDateStr(cur);
 const dd = branchData[key] || {};
 let sum = 0;
 Object.entries(dd).forEach(([k,list])=>{
@@ -2579,7 +2591,7 @@ const YESTERDAY_JOKES = [
 function checkYesterdayReminder(){
 const banner = document.getElementById('yesterdayReminder');
 const y = new Date(state.date+'T00:00:00'); y.setDate(y.getDate()-1);
-const yStr = y.toISOString().slice(0,10);
+const yStr = localDateStr(y);
 const branchData = (DATA[state.branch] || {})[yStr];
 const hasAny = branchData && Object.values(branchData).some(list=> Array.isArray(list) && list.length>0);
 if(hasAny){ banner.style.display='none'; return; }
@@ -2592,7 +2604,7 @@ document.getElementById('yesterdayReminder').style.display='none';
 });
 document.getElementById('yesterdayReminderFill').addEventListener('click', ()=>{
 const y = new Date(state.date+'T00:00:00'); y.setDate(y.getDate()-1);
-state.date = y.toISOString().slice(0,10);
+state.date = localDateStr(y);
 document.getElementById('dateSelect').value = state.date;
 document.getElementById('yesterdayReminder').style.display='none';
 document.querySelectorAll('.side-link').forEach(t=>t.classList.remove('active'));
