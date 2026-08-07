@@ -158,6 +158,8 @@ border-radius:13px;transition:.15s;
 .kpi-was-now{font-size:13px;color:var(--sub);margin-bottom:6px;}
 .kpi-was-now b{color:var(--ink);font-size:15px;}
 .ratio-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px;color:var(--sub);}
+.info-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--surface2);border:1px solid var(--line2);color:var(--sub);font-size:10.5px;font-weight:700;cursor:pointer;vertical-align:middle;margin-left:2px;}
+.info-icon:active{background:var(--blue);color:#fff;border-color:var(--blue);}
 .ratio-row b{color:var(--ink);font-size:14px;}
 .stat{
 flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:8px;
@@ -1152,6 +1154,64 @@ const m = String(d.getMonth()+1).padStart(2,'0');
 const day = String(d.getDate()).padStart(2,'0');
 return y+'-'+m+'-'+day;
 }
+/* ---------- ПОДСКАЗКИ "?" — объясняем цифры простыми словами ---------- */
+const INFO_EXPLAINERS = {
+zakupRatio: d => `Показывает, сколько из каждых заработанных денег ушло на закуп/расходы.\n\nПродажи: ${d.sales}\nРасходы: ${d.val}\n\n${d.val} — это ${d.pct}% от ${d.sales}.\n\nПример: если доля 30% — значит с каждых 100 000 ₸ выручки 30 000 ₸ ушло на закуп.`,
+salaryRatio: d => `Показывает, сколько из каждых заработанных денег ушло на зарплату (ежедневные + авансы + курьеры + под ЗП).\n\nПродажи: ${d.sales}\nЗарплата: ${d.val}\n\n${d.val} — это ${d.pct}% от ${d.sales}.\n\nПример: если доля 15% — значит с каждых 100 000 ₸ выручки 15 000 ₸ ушло на зарплату.`,
+netMargin: d => `Сколько денег реально остаётся "в кармане" после ВСЕХ расходов и зарплаты — в процентах от выручки.\n\nПродажи: ${d.sales}\nОстаток чистыми: ${d.val}\n\nЭто ${d.pct}% от ${d.sales}.\n\nПример: маржа 20% значит — с каждых 100 000 ₸ продаж чистыми остаётся 20 000 ₸. Чем выше — тем лучше.`,
+};
+function infoIconHtml(key){
+return `<span class="info-icon" data-info="${key}">?</span>`;
+}
+function wireInfoIcons(container, dataMap){
+container.querySelectorAll('.info-icon').forEach(el=>{
+el.addEventListener('click', e=>{
+e.stopPropagation();
+const key = el.dataset.info;
+const text = INFO_EXPLAINERS[key] ? INFO_EXPLAINERS[key](dataMap[key]) : '';
+showInfoModal(text);
+});
+});
+}
+function showInfoModal(text){
+let modal = document.getElementById('infoModal');
+if(!modal){
+modal = document.createElement('div');
+modal.id = 'infoModal';
+modal.className = 'modal-backdrop';
+modal.innerHTML = `<div class="modal-box"><div id="infoModalText" style="white-space:pre-line;font-size:14.5px;line-height:1.5;"></div><div class="modal-actions" style="margin-top:16px;"><button class="primary-btn" id="infoModalOk" style="flex:1;">Понятно</button></div></div>`;
+document.body.appendChild(modal);
+document.getElementById('infoModalOk').addEventListener('click', ()=> modal.style.display='none');
+modal.addEventListener('click', e=>{ if(e.target===modal) modal.style.display='none'; });
+}
+document.getElementById('infoModalText').textContent = text;
+modal.style.display = 'flex';
+}
+
+/* ---------- ЗВУК КЛИКА (лёгкий, как нажатие клавиши на iPhone) ---------- */
+let audioCtx = null;
+function playClickSound(){
+try{
+if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+if(audioCtx.state === 'suspended') audioCtx.resume();
+const t = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.type = 'sine';
+osc.frequency.setValueAtTime(1000, t);
+osc.frequency.exponentialRampToValueAtTime(600, t+0.03);
+gain.gain.setValueAtTime(0.05, t);
+gain.gain.exponentialRampToValueAtTime(0.0001, t+0.045);
+osc.connect(gain); gain.connect(audioCtx.destination);
+osc.start(t); osc.stop(t+0.05);
+}catch(e){}
+}
+document.addEventListener('click', e=>{
+if(e.target.closest('button, .pick-chip, .chip, .side-link, .mode-btn, .acc-item, .icon-btn, .tab, .acc-group-header, .info-icon')){
+playClickSound();
+}
+}, true);
+
 function fmt(n){
 n = Math.round(Number(n)||0);
 return n.toLocaleString('ru-RU') + ' ₸';
@@ -1764,10 +1824,19 @@ header.addEventListener('click', ()=>{
 if(catSearchQuery.trim()) return; // при активном поиске группы не сворачиваем вручную
 const grp = header.closest('.acc-group');
 const g = grp.dataset.g;
-if(guidedGroup === g){ guidedGroup = null; } else { guidedGroup = g; }
+const prevOpenGroup = guidedGroup;
+guidedGroup = (guidedGroup === g) ? null : g;
 selectedCatKey = null;
 newCatMode = null;
+if(prevOpenGroup){
+// сначала плавно схлопываем то, что было открыто (на ЭТОМ ЖЕ элементе,
+// чтобы transition реально сработал), и только потом перерисовываем список
+const prevSublist = box.querySelector(`.acc-group[data-g="${prevOpenGroup}"] .acc-sublist`);
+if(prevSublist) prevSublist.style.maxHeight = '0px';
+setTimeout(renderGuidedGroups, 380);
+} else {
 renderGuidedGroups();
+}
 });
 });
 box.querySelectorAll('.acc-item[data-k]').forEach(item=>{
@@ -2578,6 +2647,19 @@ const {merged: prevMerged} = sumByGroupRange(state.branch, prevFrom, prevTo);
 const pf = computeFormulas(prevMerged);
 
 const fmtRange = d=> d.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit'});
+function periodLabelHuman(from, to){
+const days = Math.round((to-from)/86400000)+1;
+if(days===1){
+const todayStr = localDateStr();
+const yD = new Date(); yD.setDate(yD.getDate()-1);
+const yStr = localDateStr(yD);
+const dStr = localDateStr(from);
+if(dStr===todayStr) return 'Сегодня ('+fmtRange(from)+')';
+if(dStr===yStr) return 'Вчера ('+fmtRange(from)+')';
+return fmtRange(from);
+}
+return fmtRange(from)+'–'+fmtRange(to)+' ('+days+' дн.)';
+}
 document.getElementById('analyticsCard').querySelector('h3').innerHTML = `📊 Аналитика — было / стало`;
 
 const kpis = [
@@ -2587,7 +2669,7 @@ const kpis = [
 {label:'Итог чистыми', cur:f.net, prev:pf.net, goodIfUp:true},
 ];
 document.getElementById('analyticsGrid').innerHTML = `
-<div style="font-size:11.5px;color:var(--sub);margin-bottom:10px;">${fmtRange(prevFrom)}–${fmtRange(prevTo)} → ${fmtRange(curFrom)}–${fmtRange(curTo)}</div>
+<div style="font-size:12.5px;color:var(--sub);margin-bottom:10px;font-weight:600;">${periodLabelHuman(prevFrom,prevTo)} <span style="opacity:.5;">→</span> ${periodLabelHuman(curFrom,curTo)}</div>
 <div class="kpi-grid">${kpis.map(k=>{
 const pct = pctChange(k.cur, k.prev);
 const isGood = k.goodIfUp ? pct>=0 : pct<=0;
@@ -2602,10 +2684,15 @@ const zakupPct = f.sales>0 ? (f.zakup/f.sales*100) : 0;
 const salaryPct = f.sales>0 ? (f.salary/f.sales*100) : 0;
 const netPct = f.sales>0 ? (f.net/f.sales*100) : 0;
 document.getElementById('analyticsRatios').innerHTML = `
-<div class="ratio-row"><span>Доля расходов от продаж</span><b>${zakupPct.toFixed(1)}%</b></div>
-<div class="ratio-row"><span>Доля зарплаты от продаж</span><b>${salaryPct.toFixed(1)}%</b></div>
-<div class="ratio-row"><span>Чистая маржа</span><b style="color:${netPct>=0?'var(--green)':'var(--red)'}">${netPct.toFixed(1)}%</b></div>
+<div class="ratio-row"><span>Доля расходов от продаж ${infoIconHtml('zakupRatio')}</span><b>${zakupPct.toFixed(1)}%</b></div>
+<div class="ratio-row"><span>Доля зарплаты от продаж ${infoIconHtml('salaryRatio')}</span><b>${salaryPct.toFixed(1)}%</b></div>
+<div class="ratio-row"><span>Чистая маржа ${infoIconHtml('netMargin')}</span><b style="color:${netPct>=0?'var(--green)':'var(--red)'}">${netPct.toFixed(1)}%</b></div>
 `;
+wireInfoIcons(document.getElementById('analyticsRatios'), {
+zakupRatio: {val: fmt(f.zakup), sales: fmt(f.sales), pct: zakupPct.toFixed(1)},
+salaryRatio: {val: fmt(f.salary), sales: fmt(f.sales), pct: salaryPct.toFixed(1)},
+netMargin: {val: fmt(f.net), sales: fmt(f.sales), pct: netPct.toFixed(1)},
+});
 
 document.getElementById('totalsBar').innerHTML = `
 <div class="stat pos"><div class="label">Общая продажа</div><div class="value">${fmt(f.sales)}</div></div>
