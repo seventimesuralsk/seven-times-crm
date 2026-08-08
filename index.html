@@ -153,6 +153,9 @@ border-radius:13px;transition:.15s;
 .totals-bar{display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;}
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px;}
 .kpi-cell{background:var(--surface2);border-radius:10px;padding:12px 14px;}
+.kpi-clickable{cursor:pointer;position:relative;transition:background-color .15s ease, transform .12s ease;}
+.kpi-clickable:active{background:var(--line);transform:scale(.97);}
+.kpi-clickable::after{content:'';position:absolute;top:10px;right:10px;width:6px;height:6px;border-radius:50%;background:var(--blue);opacity:.35;}
 .kpi-label{font-size:11.5px;color:var(--sub);margin-bottom:4px;}
 .kpi-value{font-size:18px;font-weight:800;margin-bottom:4px;}
 .kpi-was-now{font-size:13px;color:var(--sub);margin-bottom:6px;}
@@ -160,6 +163,9 @@ border-radius:13px;transition:.15s;
 .ratio-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px;color:var(--sub);}
 .info-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--surface2);border:1px solid var(--line2);color:var(--sub);font-size:10.5px;font-weight:700;cursor:pointer;vertical-align:middle;margin-left:2px;}
 .info-icon:active{background:var(--blue);color:#fff;border-color:var(--blue);}
+.detail-insight{background:var(--surface2);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;margin-bottom:14px;}
+.detail-section-title{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 4px;}
+.detail-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;}
 .ratio-row b{color:var(--ink);font-size:14px;}
 .stat{
 flex:1;min-width:150px;background:var(--card);border:1px solid var(--line);border-radius:8px;
@@ -541,11 +547,6 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="card" id="planCard" style="display:none;">
 <h3>🎯 План продаж на месяц</h3>
 <div id="planContent"></div>
-</div>
-
-<div class="card" id="forecastCard" style="display:none;">
-<h3>📈 Прогноз на конец месяца</h3>
-<div id="forecastContent"></div>
 </div>
 <div class="totals-bar" id="totalsBar"></div>
 <div class="card">
@@ -1202,6 +1203,94 @@ document.getElementById('infoModalOk').addEventListener('click', ()=> modal.styl
 modal.addEventListener('click', e=>{ if(e.target===modal) modal.style.display='none'; });
 }
 document.getElementById('infoModalText').textContent = text;
+modal.style.display = 'flex';
+}
+
+/* ---------- ДЕТАЛЬНЫЙ БУХГАЛТЕРСКИЙ РАЗБОР (скрытая фишка — открывается кликом по карточке аналитики) ---------- */
+function openMetricDetail(type, curFrom, curTo, pf){
+const {totals, merged} = sumByGroupRange(state.branch, curFrom, curTo);
+const f = computeFormulas(merged);
+let title, bodyHtml;
+
+if(type==='sales'){
+title = '💰 Продажи — детальный разбор';
+const chObj = {};
+['agg','term','cash','unpaid'].forEach(g=> Object.entries(totals[g]||{}).forEach(([k,v])=>{ chObj[COLUMNS[k].name] = v; }));
+const entries = Object.entries(chObj).sort((a,b)=>b[1]-a[1]);
+const top = entries[0];
+const topShare = f.sales>0 && top ? (top[1]/f.sales*100).toFixed(0) : 0;
+const rowsHtml = entries.map(([name,v])=>{
+const share = f.sales>0 ? (v/f.sales*100).toFixed(1) : 0;
+return `<div class="detail-row"><span>${name}</span><span>${fmt(v)} <span style="color:var(--sub);">(${share}%)</span></span></div>`;
+}).join('');
+bodyHtml = `
+<div class="detail-insight">💡 ${top ? `Больше всего денег приносит «${top[0]}» — ${topShare}% всех продаж за период.` : 'Пока нет данных за этот период.'}
+${f.unpaid>0 ? ` Обрати внимание: ${fmt(f.unpaid)} — это ещё не оплаченные счета, реальных денег на руках меньше.` : ''}</div>
+<div class="detail-section-title">По каналам</div>
+${rowsHtml || '<div class="empty">Нет данных</div>'}
+`;
+} else if(type==='expense'){
+title = '🧾 Расходы — детальный разбор';
+const items = Object.entries(totals.expense||{}).map(([k,v])=>[COLUMNS[k].name, v]).sort((a,b)=>b[1]-a[1]);
+const top = items[0];
+const topShare = f.zakup>0 && top ? (top[1]/f.zakup*100).toFixed(0) : 0;
+const rowsHtml = items.slice(0,12).map(([name,v])=>{
+const share = f.zakup>0 ? (v/f.zakup*100).toFixed(1) : 0;
+return `<div class="detail-row"><span>${name}</span><span>${fmt(v)} <span style="color:var(--sub);">(${share}%)</span></span></div>`;
+}).join('');
+bodyHtml = `
+<div class="detail-insight">💡 ${top ? `Больше всего денег ушло на «${top[0]}» — ${topShare}% всех расходов за период. Если это регулярная статья — можно поискать поставщика подешевле.` : 'Пока нет данных за этот период.'}</div>
+<div class="detail-section-title">Топ статей расхода</div>
+${rowsHtml || '<div class="empty">Нет данных</div>'}
+`;
+} else if(type==='salary'){
+title = '👥 Зарплата — детальный разбор';
+const rows = salaryBreakdown(state.branch, curFrom, curTo);
+const byType = {};
+rows.forEach(r=>{ byType[r.typeLabel] = (byType[r.typeLabel]||0) + r.amount; });
+const typeRows = Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>{
+const share = f.salary>0 ? (v/f.salary*100).toFixed(1) : 0;
+return `<div class="detail-row"><span style="text-transform:capitalize;">${t}</span><span>${fmt(v)} <span style="color:var(--sub);">(${share}%)</span></span></div>`;
+}).join('');
+const personRows = rows.slice(0,10).map(r=>`<div class="detail-row"><span>${r.name}</span><span>${fmt(r.amount)}</span></div>`).join('');
+const advanceShare = f.salary>0 ? ((byType['аванс']||0)/f.salary*100) : 0;
+bodyHtml = `
+<div class="detail-insight">💡 ${advanceShare>40 ? `Авансы составляют ${advanceShare.toFixed(0)}% зарплатного фонда — это много. Если люди часто берут вперёд, может не хватать на ежедневные выплаты ближе к концу месяца.` : 'Структура выплат выглядит ровно.'}</div>
+<div class="detail-section-title">По типу выплаты</div>
+${typeRows || '<div class="empty">Нет данных</div>'}
+<div class="detail-section-title">Кто сколько взял</div>
+${personRows || '<div class="empty">Нет данных</div>'}
+`;
+} else { // net
+title = '📈 Итог чистыми — детальный разбор';
+const marginPct = f.sales>0 ? (f.net/f.sales*100) : 0;
+let verdict;
+if(marginPct >= 20) verdict = 'Это хорошая маржа для общепита — выше среднего по рынку.';
+else if(marginPct >= 10) verdict = 'Нормальная маржа для кафе/кофейни — в пределах здорового диапазона (обычно 10–20%).';
+else if(marginPct >= 0) verdict = 'Маржа низкая — почти всё съедают расходы и зарплата. Стоит присмотреться к закупу и загрузке персонала.';
+else verdict = 'Период ушёл в минус — расходы и зарплата превысили продажи. Нужно разбираться, что произошло.';
+bodyHtml = `
+<div class="detail-insight">💡 Чистая маржа за период: <b>${marginPct.toFixed(1)}%</b>. ${verdict}</div>
+<div class="detail-section-title">Как считали</div>
+<div class="detail-row"><span>Продажи</span><span>${fmt(f.sales)}</span></div>
+<div class="detail-row"><span>− Расходы (закуп)</span><span>${fmt(f.zakup)}</span></div>
+<div class="detail-row"><span>− Зарплата</span><span>${fmt(f.salary)}</span></div>
+<div class="detail-row" style="border-top:1px solid var(--line);padding-top:8px;margin-top:4px;"><span><b>= Итог чистыми</b></span><span><b>${fmt(f.net)}</b></span></div>
+`;
+}
+
+let modal = document.getElementById('metricModal');
+if(!modal){
+modal = document.createElement('div');
+modal.id = 'metricModal';
+modal.className = 'modal-backdrop';
+modal.innerHTML = `<div class="modal-box" style="max-width:480px;"><h3 id="metricModalTitle"></h3><div id="metricModalBody"></div><div class="modal-actions" style="margin-top:16px;"><button class="primary-btn" id="metricModalOk" style="flex:1;">Закрыть</button></div></div>`;
+document.body.appendChild(modal);
+document.getElementById('metricModalOk').addEventListener('click', ()=> modal.style.display='none');
+modal.addEventListener('click', e=>{ if(e.target===modal) modal.style.display='none'; });
+}
+document.getElementById('metricModalTitle').textContent = title;
+document.getElementById('metricModalBody').innerHTML = bodyHtml;
 modal.style.display = 'flex';
 }
 
@@ -2647,7 +2736,6 @@ box.querySelectorAll('.vchart-bar').forEach(el=>{ el.style.height = el.dataset.h
 function renderPlanAndForecast(){
 const target = (CONFIG.monthlyTargets || {})[state.branch];
 const planCard = document.getElementById('planCard');
-const forecastCard = document.getElementById('forecastCard');
 
 const today = new Date(localDateStr()+'T00:00:00');
 const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -2656,8 +2744,6 @@ const daysElapsed = today.getDate();
 const {merged} = sumByGroupRange(state.branch, monthStart, today);
 const fMonth = computeFormulas(merged);
 const actual = fMonth.sales;
-const dailyAvg = daysElapsed>0 ? actual/daysElapsed : 0;
-const projected = dailyAvg * daysInMonth;
 
 // --- План / Факт ---
 if(!target){
@@ -2687,30 +2773,6 @@ const el = document.querySelector('#planContent .bar-fill');
 if(el) el.style.width = el.dataset.w + '%';
 }));
 }
-
-// --- Прогноз ---
-forecastCard.style.display = '';
-const pctOfDaysGone = (daysElapsed/daysInMonth*100).toFixed(0);
-const vsTargetHtml = target ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--sub);">При таком темпе к концу месяца план будет ${projected>=target ? `<b style="color:var(--green);">выполнен (${(projected/target*100).toFixed(0)}%)</b>` : `<b style="color:var(--red);">не выполнен (${(projected/target*100).toFixed(0)}%)</b>`}</div>` : '';
-document.getElementById('forecastContent').innerHTML = `
-<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
-<div style="flex:1;min-width:140px;">
-<div style="font-size:11.5px;color:var(--sub);">Прогноз на весь месяц</div>
-<div style="font-size:22px;font-weight:800;">${fmt(projected)}</div>
-</div>
-<div style="flex:1;min-width:140px;">
-<div style="font-size:11.5px;color:var(--sub);">Средняя в день</div>
-<div style="font-size:22px;font-weight:800;">${fmt(dailyAvg)}</div>
-</div>
-</div>
-<div class="bar-track" style="height:10px;"><div class="bar-fill" data-w="${pctOfDaysGone}" style="width:0%;background:linear-gradient(90deg,#8e8e93,#c7c7cc);"></div></div>
-<div style="font-size:11.5px;color:var(--sub);margin-top:4px;">Прошло ${daysElapsed} из ${daysInMonth} дней месяца (${pctOfDaysGone}%)</div>
-${vsTargetHtml}
-`;
-requestAnimationFrame(()=>requestAnimationFrame(()=>{
-const el = document.querySelector('#forecastContent .bar-fill');
-if(el) el.style.width = el.dataset.w + '%';
-}));
 }
 
 function renderDashboard(){
@@ -2746,24 +2808,31 @@ return fmtRange(from);
 }
 return fmtRange(from)+'–'+fmtRange(to)+' ('+days+' дн.)';
 }
-document.getElementById('analyticsCard').querySelector('h3').innerHTML = `📊 Аналитика <span style="font-weight:400;color:var(--sub);font-size:12px;">— в сравнении с прошлым периодом</span>`;
+document.getElementById('analyticsCard').querySelector('h3').innerHTML = `📊 Аналитика ${infoIconHtml('analyticsGeneral')} <span style="font-weight:400;color:var(--sub);font-size:12px;">— в сравнении с прошлым периодом</span>`;
+document.getElementById('analyticsCard').querySelector('h3').querySelector('.info-icon').addEventListener('click', e=>{
+e.stopPropagation();
+showInfoModal('Сравниваем выбранный период с точно таким же по длине периодом ДО него.\n\nНапример: выбрал "7 дней" — сравнивает с предыдущими 7 днями. Выбрал "Сегодня" — сравнивает со вчера.\n\n▲ зелёным — стало лучше. ▼ красным — стало хуже. Для расходов и зарплаты рост — это плохо (красный), а снижение — хорошо (зелёный).\n\nПодсказка: нажми на любую из четырёх карточек ниже (Продажи, Расходы и т.д.) — откроется подробный разбор.');
+});
 
 const kpis = [
-{label:'Продажи', cur:f.sales, prev:pf.sales, goodIfUp:true},
-{label:'Расходы (закуп)', cur:f.zakup, prev:pf.zakup, goodIfUp:false},
-{label:'Зарплата', cur:f.salary, prev:pf.salary, goodIfUp:false},
-{label:'Итог чистыми', cur:f.net, prev:pf.net, goodIfUp:true},
+{label:'Продажи', cur:f.sales, prev:pf.sales, goodIfUp:true, type:'sales'},
+{label:'Расходы (закуп)', cur:f.zakup, prev:pf.zakup, goodIfUp:false, type:'expense'},
+{label:'Зарплата', cur:f.salary, prev:pf.salary, goodIfUp:false, type:'salary'},
+{label:'Итог чистыми', cur:f.net, prev:pf.net, goodIfUp:true, type:'net'},
 ];
 document.getElementById('analyticsGrid').innerHTML = `
 <div class="kpi-grid">${kpis.map(k=>{
 const pct = pctChange(k.cur, k.prev);
 const isGood = k.goodIfUp ? pct>=0 : pct<=0;
-return `<div class="kpi-cell">
+return `<div class="kpi-cell kpi-clickable" data-type="${k.type}">
 <div class="kpi-label">${k.label}</div>
 <div class="kpi-value">${fmt(k.cur)}</div>
 <div>${trendBadgeHtml(pct, isGood)}</div>
 </div>`;
 }).join('')}</div>`;
+document.getElementById('analyticsGrid').querySelectorAll('.kpi-clickable').forEach(cell=>{
+cell.addEventListener('click', ()=> openMetricDetail(cell.dataset.type, curFrom, curTo, pf));
+});
 
 const zakupPct = f.sales>0 ? (f.zakup/f.sales*100) : 0;
 const salaryPct = f.sales>0 ? (f.salary/f.sales*100) : 0;
