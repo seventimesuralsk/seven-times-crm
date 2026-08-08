@@ -447,6 +447,9 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="side-link" id="presentationLink" style="background:linear-gradient(135deg,#0071e3,#5ac8fa);color:#fff;font-weight:500;display:flex;align-items:center;justify-content:space-between;">
 <span>🎁 Презентация</span><span style="font-size:11px;opacity:.85;">🔒</span>
 </div>
+<div class="side-link" id="employeesLink" style="display:flex;align-items:center;justify-content:space-between;">
+<span>👥 Сотрудники</span><span style="background:var(--red);color:#fff;font-size:9.5px;font-weight:600;padding:2px 6px;border-radius:6px;">NEW</span>
+</div>
 <div class="side-link" data-view="settings">Настройки</div>
 <div class="side-link" id="logoutLink" style="color:var(--red);margin-top:10px;">Выйти</div>
 </nav>
@@ -1404,15 +1407,18 @@ const WELCOME_MESSAGES = [
 'заходишь как босс, работаешь как босс',
 'сегодня без сюрпризов, только цифры и профит',
 ];
-function showWelcomeNotification(){
-const name = currentUser ? currentUser.name : ADMIN_NAME();
-const msg = WELCOME_MESSAGES[Math.floor(Math.random()*WELCOME_MESSAGES.length)];
-document.getElementById('iosNotifTitle').textContent = `Seven Times · Привет, ${name} 👋`;
-document.getElementById('iosNotifText').textContent = msg;
+function showIosNotification(title, text){
+document.getElementById('iosNotifTitle').textContent = title;
+document.getElementById('iosNotifText').textContent = text;
 const el = document.getElementById('iosNotification');
 playNotifSound();
 el.classList.add('show');
 setTimeout(()=> el.classList.remove('show'), 4000);
+}
+function showWelcomeNotification(){
+const name = currentUser ? currentUser.name : ADMIN_NAME();
+const msg = WELCOME_MESSAGES[Math.floor(Math.random()*WELCOME_MESSAGES.length)];
+showIosNotification(`Seven Times · Привет, ${name} 👋`, msg);
 }
 
 document.addEventListener('click', e=>{
@@ -1734,6 +1740,10 @@ document.getElementById('view-presentation').classList.add('active');
 document.getElementById('pageTitle').textContent = 'Презентация';
 closeSidebar();
 renderPresentation();
+});
+document.getElementById('employeesLink').addEventListener('click', ()=>{
+closeSidebar();
+showIosNotification('👥 Сотрудники', 'Скоро здесь появится: часы смен, зарплата по ставке, графики и KPI по каждому сотруднику. Уже в разработке 🚀');
 });
 document.querySelectorAll('#presPeriodChips .chip').forEach(chip=>{
 chip.addEventListener('click', ()=>{
