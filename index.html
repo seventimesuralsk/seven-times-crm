@@ -662,6 +662,18 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="row" id="settingsTargetsRow"></div>
 <div class="footer-actions"><button class="save-btn" id="saveTargetsBtn">Сохранить план</button></div>
 </div>
+
+<div class="card">
+<h3>📂 Свои статьи</h3>
+<p style="color:var(--sub);font-size:13px;margin-top:0;">Категории, которые добавляли через "Не нашли? Добавьте свой вариант". Тут можно добавить новую напрямую или удалить ненужную.</p>
+<div class="row">
+<select id="newCatGroupSelect"></select>
+<input type="text" id="newCatNameSettings" placeholder="Название, например «Творог»">
+<button class="primary-btn" id="addCatSettingsBtn" style="flex:0;">Добавить</button>
+</div>
+<div id="freeCategoriesList" style="margin-top:10px;"></div>
+</div>
+
 <div class="card">
 <h3>Доступ (главный админ)</h3>
 <div class="row">
@@ -2014,6 +2026,11 @@ v.focus();
 v.addEventListener('input', e=>{
 if(SOURCE_GROUPS.includes(guidedGroup) && e.target.value !== ''){ sourceRow.style.display = 'flex'; }
 else { sourceRow.style.display = 'none'; }
+// показ/скрытие "Изъято" меняет высоту содержимого — аккордеон был зафиксирован
+// на старой высоте (когда это поле ещё было скрыто), пересчитываем заново,
+// иначе новый контент обрежется невидимым overflow:hidden
+const sublist = inputRow.closest('.acc-sublist');
+if(sublist) sublist.style.maxHeight = sublist.scrollHeight + 'px';
 });
 v.addEventListener('keydown', e=>{ if(e.key==='Enter') addGuidedValue(); });
 document.getElementById('guidedAddBtn').addEventListener('click', addGuidedValue);
@@ -3004,7 +3021,39 @@ const targets = CONFIG.monthlyTargets || {};
 document.getElementById('settingsTargetsRow').innerHTML = CONFIG.branches.map(b=>
 `<div class="field"><label>${b} — план на месяц, ₸</label><input type="number" class="target-input" data-branch="${b}" value="${targets[b]||''}" placeholder="например 3000000"></div>`
 ).join('');
+renderFreeCategoriesSettings();
 }
+function renderFreeCategoriesSettings(){
+const groupSel = document.getElementById('newCatGroupSelect');
+groupSel.innerHTML = GROUP_ORDER.map(g=>`<option value="${g}">${GROUP_LABELS[g]}</option>`).join('');
+const list = CONFIG.freeColumns || [];
+const box = document.getElementById('freeCategoriesList');
+if(!list.length){ box.innerHTML = '<div class="empty">Своих статей пока нет</div>'; return; }
+box.innerHTML = list.map(fc=>`
+<div class="entry-item" data-key="${fc.key}">
+<div class="ei-name">${fc.name}<div class="ei-note">${GROUP_LABELS[fc.group]||fc.group}</div></div>
+<button class="ghost-btn free-cat-del">Удалить</button>
+</div>`).join('');
+box.querySelectorAll('.free-cat-del').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+const key = btn.closest('.entry-item').dataset.key;
+CONFIG.freeColumns = (CONFIG.freeColumns||[]).filter(fc=>fc.key!==key);
+delete COLUMNS[key];
+saveConfig();
+renderFreeCategoriesSettings();
+toast('Статья удалена');
+});
+});
+}
+document.getElementById('addCatSettingsBtn').addEventListener('click', ()=>{
+const name = document.getElementById('newCatNameSettings').value.trim();
+const group = document.getElementById('newCatGroupSelect').value;
+if(!name){ toast('Напиши название статьи'); return; }
+addFreeCategory(name, group);
+document.getElementById('newCatNameSettings').value = '';
+renderFreeCategoriesSettings();
+toast('Статья добавлена: ' + name);
+});
 document.getElementById('saveTargetsBtn').addEventListener('click', ()=>{
 const targets = {};
 document.querySelectorAll('.target-input').forEach(inp=>{
