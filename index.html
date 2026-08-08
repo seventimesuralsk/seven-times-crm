@@ -181,7 +181,9 @@ border-radius:13px;transition:.15s;
 .kpi-value{font-size:18px;font-weight:800;margin-bottom:4px;}
 .kpi-was-now{font-size:13px;color:var(--sub);margin-bottom:6px;}
 .kpi-was-now b{color:var(--ink);font-size:15px;}
-.ratio-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px;color:var(--sub);}
+.ratio-row-wrap{border-top:1px solid var(--line);padding-top:8px;margin-top:2px;}
+.ratio-row-wrap:first-child{border-top:none;padding-top:0;margin-top:0;}
+.ratio-row{display:flex;justify-content:space-between;align-items:center;padding:0 0 6px;font-size:13.5px;color:var(--sub);}
 .info-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;background:var(--surface2);border:1px solid var(--line2);color:var(--sub);font-size:10.5px;font-weight:700;cursor:pointer;vertical-align:middle;margin-left:2px;}
 .info-icon:active{background:var(--blue);color:#fff;border-color:var(--blue);}
 .detail-insight{background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;margin-bottom:14px;}
@@ -422,6 +424,11 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <span>🎁 Презентация</span><span style="font-size:11px;opacity:.85;">🔒</span>
 </div>
 <div class="side-link" data-view="settings">Настройки</div>
+<div class="side-link" data-view="settings" data-settings-anchor="settingsPlanCard" style="padding-left:22px;font-size:13.5px;">🎯 План продаж</div>
+<div class="side-link" data-view="settings" data-settings-anchor="settingsCatCard" style="padding-left:22px;font-size:13.5px;">📂 Свои статьи</div>
+<div class="side-link" data-view="settings" data-settings-anchor="settingsAccessCard" style="padding-left:22px;font-size:13.5px;">🔐 Доступ / пароль</div>
+<div class="side-link" data-view="settings" data-settings-anchor="settingsBranchCard" style="padding-left:22px;font-size:13.5px;">🏢 Филиалы</div>
+<div class="side-link" data-view="settings" data-settings-anchor="settingsCashierCard" style="padding-left:22px;font-size:13.5px;">👥 Кассиры</div>
 <div class="side-link" id="logoutLink" style="color:var(--red);margin-top:10px;">Выйти</div>
 </nav>
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -554,7 +561,6 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="chip active" data-period="day">Сегодня</div>
 <div class="chip" data-period="7">7 дней</div>
 <div class="chip" data-period="15">15 дней</div>
-<div class="chip" data-period="daily">По дням</div>
 <div class="chip" data-period="month">По месяцам</div>
 <div class="chip" data-period="range">Период</div>
 </div>
@@ -570,7 +576,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <h3>🎯 План продаж на месяц</h3>
 <div id="planContent"></div>
 </div>
-<div class="totals-bar" id="totalsBar"></div>
+<div class="totals-bar" id="totalsBar" style="display:none;"></div>
 <div class="card">
 <h3>Агрегаторы</h3>
 <div class="bars" id="aggBars"></div>
@@ -615,10 +621,6 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <h3>Поставщики — неоплаченные накладные</h3>
 <div class="bars" id="supplierDebtBars"></div>
 </div>
-</div>
-<div class="card" id="dailyTrendCard" style="display:none;margin-top:16px;">
-<h3>Продажи по дням</h3>
-<div class="bars" id="trendBars"></div>
 </div>
 <div class="footer-actions no-print">
 <button class="ghost-btn" id="frPdfBtn">Скачать PDF</button>
@@ -678,14 +680,14 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 </div>
 
 <div class="view" id="view-settings">
-<div class="card">
+<div class="card" id="settingsPlanCard">
 <h3>🎯 План продаж на месяц</h3>
 <p style="color:var(--sub);font-size:13px;margin-top:0;">Задай цель по каждому филиалу — в "Показать отчёт" появится прогресс "план/факт" и прогноз выполнения.</p>
 <div class="row" id="settingsTargetsRow"></div>
 <div class="footer-actions"><button class="save-btn" id="saveTargetsBtn">Сохранить план</button></div>
 </div>
 
-<div class="card">
+<div class="card" id="settingsCatCard">
 <h3>📂 Свои статьи</h3>
 <p style="color:var(--sub);font-size:13px;margin-top:0;">Категории, которые добавляли через "Не нашли? Добавьте свой вариант". Тут можно добавить новую напрямую или удалить ненужную.</p>
 <div class="row">
@@ -696,11 +698,13 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div id="freeCategoriesList" style="margin-top:10px;"></div>
 </div>
 
-<div class="card">
+<div class="card" id="settingsAccessCard">
 <h3>Доступ (главный админ)</h3>
 <div class="row">
 <div class="field"><label>Имя админа (приветствие)</label><input type="text" id="settingsAdminName"></div>
-<div class="field"><label>PIN-код входа</label><input type="text" id="settingsPin" value="2767" disabled></div>
+<div class="field"><label>PIN-код входа (4 цифры)</label><input type="text" id="settingsPin" maxlength="4" inputmode="numeric">
+<div id="settingsPinHint" style="font-size:11.5px;color:var(--sub);margin-top:4px;"></div>
+</div>
 </div>
 <div class="row" style="margin-top:12px;">
 <div class="field"><label>Аватар</label>
@@ -712,7 +716,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 </div>
 <p style="color:var(--sub);font-size:12.5px;margin-top:10px;">Почта/телефон — на будущее (для связи), реальную смс-рассылку для сброса пароля сайт не отправляет — если забудешь пароль, зайди с другого устройства, где сессия уже открыта, и смени его здесь же.</p>
 </div>
-<div class="card">
+<div class="card" id="settingsCashierCard">
 <h3>Кассиры</h3>
 <p style="color:var(--sub);font-size:13px;margin-top:0;">Заведи отдельный вход для каждого кассира — со своим PIN и ограниченными правами. Ты (главный админ) видишь всё всегда.</p>
 <div class="row">
@@ -729,7 +733,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 </div>
 <div id="cashierList" style="margin-top:16px;"></div>
 </div>
-<div class="card">
+<div class="card" id="settingsBranchCard">
 <h3>Филиалы</h3>
 <div class="row">
 <input type="text" id="newBranchName" placeholder="Название филиала">
@@ -909,7 +913,7 @@ configSyncDebounce = setTimeout(()=>{
 apiPost('set_config', { fields: {
 pin: CONFIG.pin, adminName: CONFIG.adminName, adminAvatar: CONFIG.adminAvatar,
 adminPhone: CONFIG.adminPhone, adminEmail: CONFIG.adminEmail,
-branches: CONFIG.branches, cashiers: CONFIG.cashiers, freeColumns: CONFIG.freeColumns, monthlyTargets: CONFIG.monthlyTargets
+branches: CONFIG.branches, cashiers: CONFIG.cashiers, freeColumns: CONFIG.freeColumns, monthlyTargets: CONFIG.monthlyTargets, pinChangedAt: CONFIG.pinChangedAt
 }}).catch(err=> console.error('Не удалось сохранить настройки на сервере', err));
 }, 400);
 }
@@ -926,6 +930,7 @@ if(cfg.branches){ try{ CONFIG.branches = JSON.parse(cfg.branches); }catch(e){} }
 if(cfg.cashiers){ try{ CONFIG.cashiers = JSON.parse(cfg.cashiers); }catch(e){} }
 if(cfg.freeColumns){ try{ CONFIG.freeColumns = JSON.parse(cfg.freeColumns); (CONFIG.freeColumns||[]).forEach(fc=>{ COLUMNS[fc.key] = {name:fc.name, group:fc.group}; }); }catch(e){} }
 if(cfg.monthlyTargets){ try{ CONFIG.monthlyTargets = JSON.parse(cfg.monthlyTargets); }catch(e){} }
+if(cfg.pinChangedAt) CONFIG.pinChangedAt = cfg.pinChangedAt;
 }catch(err){
 console.error('Не удалось загрузить настройки с сервера — используем локальные', err);
 }
@@ -1384,6 +1389,8 @@ document.getElementById('pageTitle').textContent = link.textContent;
 reportGroup.value = link.dataset.reportGroup;
 refreshReportCategoryOptions();
 renderReport();
+} else if(link.dataset.settingsAnchor){
+document.getElementById('pageTitle').textContent = link.textContent.trim();
 } else {
 document.getElementById('pageTitle').textContent = PAGE_TITLES[link.dataset.view] || link.textContent;
 }
@@ -1392,7 +1399,15 @@ if(link.dataset.view==='entry') openEntryDateGate();
 if(link.dataset.view==='history') renderHistory();
 if(link.dataset.view==='suppliers') renderSuppliers();
 if(link.dataset.view==='compare') renderCompare();
-if(link.dataset.view==='settings') renderSettings();
+if(link.dataset.view==='settings'){
+renderSettings();
+if(link.dataset.settingsAnchor){
+setTimeout(()=>{
+const target = document.getElementById(link.dataset.settingsAnchor);
+if(target) target.scrollIntoView({behavior:'smooth', block:'start'});
+}, 100);
+}
+}
 closeSidebar();
 if(link.dataset.view==='fullreport' || link.dataset.view==='reports' || link.dataset.view==='suppliers'){
 if(pendingWrites===0){
@@ -2563,10 +2578,6 @@ else if(period === 'yesterday'){ from = new Date(today); from.setDate(from.getDa
 else if(period === '7'){ from = new Date(today); from.setDate(from.getDate()-6); }
 else if(period === '15'){ from = new Date(today); from.setDate(from.getDate()-14); }
 else if(period === '30'){ from = new Date(today); from.setDate(from.getDate()-29); }
-else if(period === 'daily'){
-if(state.dailyFrom && state.dailyTo){ from = new Date(state.dailyFrom); to = new Date(state.dailyTo); }
-else { from = new Date(today); from.setDate(from.getDate()-6); }
-}
 else if(period === 'month'){
 const m = state.monthSel!==undefined ? state.monthSel : today.getMonth();
 const y = state.monthYearSel!==undefined ? state.monthYearSel : today.getFullYear();
@@ -2654,20 +2665,6 @@ const MONTH_NAMES_RU = ['Январь','Февраль','Март','Апрель
 function renderPeriodExtra(){
 const box = document.getElementById('periodExtra');
 const today = new Date(state.date+'T00:00:00');
-if(state.period === 'daily'){
-box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
-<input type="date" id="dailyFrom" value="${state.dailyFrom||''}" max="${localDateStr()}" style="border:1.5px solid var(--line2);min-width:130px;">
-<input type="date" id="dailyTo" value="${state.dailyTo||''}" max="${localDateStr()}" style="border:1.5px solid var(--line2);min-width:130px;">
-</div>`;
-const apply = ()=>{
-state.dailyFrom = document.getElementById('dailyFrom').value;
-state.dailyTo = document.getElementById('dailyTo').value;
-if(state.dailyFrom && state.dailyTo) renderDashboard();
-};
-document.getElementById('dailyFrom').addEventListener('change', apply);
-document.getElementById('dailyTo').addEventListener('change', apply);
-return;
-}
 if(state.period === 'month'){
 const m = state.monthSel!==undefined ? state.monthSel : today.getMonth();
 const y = state.monthYearSel!==undefined ? state.monthYearSel : today.getFullYear();
@@ -2827,14 +2824,7 @@ if(el) el.style.width = el.dataset.w + '%';
 
 function renderDashboard(){
 renderPeriodExtra();
-if(state.period === 'daily'){
-document.getElementById('summaryCards').style.display = 'none';
-document.getElementById('dailyTrendCard').style.display = '';
-renderTrend();
-return;
-}
 document.getElementById('summaryCards').style.display = '';
-document.getElementById('dailyTrendCard').style.display = 'none';
 const {totals, merged} = sumByGroup(state.branch, state.period);
 const f = computeFormulas(merged);
 
@@ -2873,6 +2863,7 @@ const kpis = [
 {label:'Зарплата', cur:f.salary, prev:pf.salary, goodIfUp:false, type:'salary'},
 {label:'Итог чистыми', cur:f.net, prev:pf.net, goodIfUp:true, type:'net'},
 ];
+const debtNow = supplierTotalUnpaid(state.branch);
 document.getElementById('analyticsGrid').innerHTML = `
 <div class="kpi-grid">${kpis.map(k=>{
 const pct = pctChange(k.cur, k.prev);
@@ -2882,7 +2873,13 @@ return `<div class="kpi-cell kpi-clickable" data-type="${k.type}">
 <div class="kpi-value">${fmt(k.cur)}</div>
 <div>${trendBadgeHtml(pct, isGood)}</div>
 </div>`;
-}).join('')}</div>`;
+}).join('')}
+<div class="kpi-cell">
+<div class="kpi-label">Долг поставщикам</div>
+<div class="kpi-value" style="color:${debtNow>0?'var(--red)':'var(--ink)'};">${fmt(debtNow)}</div>
+<div style="font-size:11px;color:var(--sub);">на сегодня</div>
+</div>
+</div>`;
 document.getElementById('analyticsGrid').querySelectorAll('.kpi-clickable').forEach(cell=>{
 cell.addEventListener('click', ()=> openMetricDetail(cell.dataset.type, curFrom, curTo, pf));
 });
@@ -2891,10 +2888,22 @@ const zakupPct = f.sales>0 ? (f.zakup/f.sales*100) : 0;
 const salaryPct = f.sales>0 ? (f.salary/f.sales*100) : 0;
 const netPct = f.sales>0 ? (f.net/f.sales*100) : 0;
 document.getElementById('analyticsRatios').innerHTML = `
+<div class="ratio-row-wrap">
 <div class="ratio-row"><span>Доля расходов от продаж ${infoIconHtml('zakupRatio')}</span><b>${zakupPct.toFixed(1)}%</b></div>
+<div class="bar-track" style="height:6px;margin-bottom:10px;"><div class="bar-fill" data-w="${Math.min(zakupPct,100).toFixed(1)}" style="width:0%;background:${zakupPct>40?'var(--red)':'var(--orange)'};"></div></div>
+</div>
+<div class="ratio-row-wrap">
 <div class="ratio-row"><span>Доля зарплаты от продаж ${infoIconHtml('salaryRatio')}</span><b>${salaryPct.toFixed(1)}%</b></div>
+<div class="bar-track" style="height:6px;margin-bottom:10px;"><div class="bar-fill" data-w="${Math.min(salaryPct,100).toFixed(1)}" style="width:0%;background:${salaryPct>35?'var(--red)':'var(--orange)'};"></div></div>
+</div>
+<div class="ratio-row-wrap">
 <div class="ratio-row"><span>Чистая маржа ${infoIconHtml('netMargin')}</span><b style="color:${netPct>=0?'var(--green)':'var(--red)'}">${netPct.toFixed(1)}%</b></div>
+<div class="bar-track" style="height:6px;"><div class="bar-fill" data-w="${Math.min(Math.max(netPct,0),100).toFixed(1)}" style="width:0%;background:${netPct>=15?'var(--green)':(netPct>=0?'var(--orange)':'var(--red)')};"></div></div>
+</div>
 `;
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+document.querySelectorAll('#analyticsRatios .bar-fill').forEach(el=>{ el.style.width = el.dataset.w + '%'; });
+}));
 wireInfoIcons(document.getElementById('analyticsRatios'), {
 zakupRatio: {val: fmt(f.zakup), sales: fmt(f.sales), pct: zakupPct.toFixed(1)},
 salaryRatio: {val: fmt(f.salary), sales: fmt(f.sales), pct: salaryPct.toFixed(1)},
@@ -3042,6 +3051,21 @@ const AVATAR_EMOJIS = ['😀','😎','🦁','🐱','🐼','☕','🍕','👩‍�
 function renderSettings(){
 document.getElementById('settingsAdminName').value = ADMIN_NAME();
 document.getElementById('settingsPin').value = ADMIN_PIN();
+const pinHint = document.getElementById('settingsPinHint');
+if(pinHint){
+if(CONFIG.pinChangedAt){
+const last = new Date(CONFIG.pinChangedAt+'T00:00:00');
+const next = new Date(last); next.setDate(next.getDate()+7);
+const today = new Date(localDateStr()+'T00:00:00');
+if(today < next){
+pinHint.textContent = 'Следующая смена пароля доступна ' + next.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+} else {
+pinHint.textContent = 'Пароль можно менять сейчас (не чаще раза в 7 дней)';
+}
+} else {
+pinHint.textContent = 'Пароль можно менять не чаще раза в 7 дней';
+}
+}
 const avSel = document.getElementById('settingsAvatar');
 avSel.innerHTML = AVATAR_EMOJIS.map(e=>`<option value="${e}">${e}</option>`).join('');
 avSel.value = CONFIG.adminAvatar || AVATAR_EMOJIS[0];
@@ -3147,13 +3171,28 @@ document.getElementById('saveAccessBtn').addEventListener('click', ()=>{
 const name = document.getElementById('settingsAdminName').value.trim();
 const pin = document.getElementById('settingsPin').value.trim();
 if(pin && !/^\d{4}$/.test(pin)){ toast('PIN должен быть из 4 цифр'); return; }
+if(pin && pin !== CONFIG.pin){
+if(CONFIG.pinChangedAt){
+const last = new Date(CONFIG.pinChangedAt+'T00:00:00');
+const next = new Date(last); next.setDate(next.getDate()+7);
+const today = new Date(localDateStr()+'T00:00:00');
+if(today < next){
+const nextStr = next.toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+toast('Пароль можно менять не чаще раза в 7 дней. Следующая смена доступна ' + nextStr);
+document.getElementById('settingsPin').value = CONFIG.pin || '2767';
+return;
+}
+}
+CONFIG.pin = pin;
+CONFIG.pinChangedAt = localDateStr();
+}
 if(name) CONFIG.adminName = name;
-if(pin) CONFIG.pin = pin;
 CONFIG.adminAvatar = document.getElementById('settingsAvatar').value;
 CONFIG.adminPhone = document.getElementById('settingsPhone').value.trim();
 CONFIG.adminEmail = document.getElementById('settingsEmail').value.trim();
 saveConfig();
 toast('Сохранено');
+renderSettings();
 });
 document.getElementById('addBranchBtn').addEventListener('click', ()=>{
 const name = document.getElementById('newBranchName').value.trim();
@@ -3185,7 +3224,7 @@ renderSettings();
 renderSuppliers();
 }
 /* ---------- ВХОД: ПАРОЛЬ / ФИЛИАЛ / ПРИВЕТСТВИЕ ---------- */
-const ADMIN_PIN = () => '2767'; // единый пароль, без завязки на настройки
+const ADMIN_PIN = () => CONFIG.pin || '2767';
 const ADMIN_NAME = () => CONFIG.adminName || 'Альбина';
 let pinBuffer = '';
 function renderPinDots(){
