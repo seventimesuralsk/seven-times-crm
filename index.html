@@ -1235,6 +1235,15 @@ return y+'-'+m+'-'+day;
 }
 /* ---------- ПОДСКАЗКИ "?" — объясняем цифры простыми словами ---------- */
 const INFO_EXPLAINERS = {
+grp_agg: () => 'Агрегаторы — это партнёры доставки (Яндекс Еда, Wolt, ChocoFood). Сюда вносишь сумму заказов, которые пришли через их сервис.',
+grp_term: () => 'Терминалы — оплата картой/QR через банковский терминал (Halyk Bank, Kaspi QR, BCC, Kaspi перевод).',
+grp_cash: () => 'Наличные — сколько живых денег реально лежит в кассе за смену.',
+grp_unpaid: () => 'Неоплаченные счета — это когда хозяин/управляющий взял что-то (например еду) для себя. Деньги за это не платились и это не расход сотрудника — просто фиксируется как "долг" перед бизнесом от самого владельца.',
+grp_expense: () => 'Расходы — закуп продуктов и любые другие траты бизнеса: овощи, упаковка, инвентарь и т.д.',
+grp_salary_daily: () => 'Зарплата — ежедневные: те сотрудники, кому платят каждый день (посменно), а не раз в месяц.',
+grp_advance: () => 'Авансы — сотрудник берёт часть зарплаты вперёд. Эта сумма потом вычитается из его итоговой зарплаты.',
+grp_courier: () => 'Курьеры — сколько курьер заработал за смену (сумма за доставки).',
+grp_podzp: () => 'Под ЗП — сотрудник берёт что-то (например крылышки домой), но это не отдельная выплата деньгами — записывается в счёт его будущей зарплаты.',
 zakupRatio: d => `Показывает, сколько из каждых заработанных денег ушло на закуп/расходы.\n\nПродажи: ${d.sales}\nРасходы: ${d.val}\n\n${d.val} — это ${d.pct}% от ${d.sales}.\n\nПример: если доля 30% — значит с каждых 100 000 ₸ выручки 30 000 ₸ ушло на закуп.`,
 salaryRatio: d => `Показывает, сколько из каждых заработанных денег ушло на зарплату (ежедневные + авансы + курьеры + под ЗП).\n\nПродажи: ${d.sales}\nЗарплата: ${d.val}\n\n${d.val} — это ${d.pct}% от ${d.sales}.\n\nПример: если доля 15% — значит с каждых 100 000 ₸ выручки 15 000 ₸ ушло на зарплату.`,
 netMargin: d => `Сколько денег реально остаётся "в кармане" после ВСЕХ расходов и зарплаты — в процентах от выручки.\n\nПродажи: ${d.sales}\nОстаток чистыми: ${d.val}\n\nЭто ${d.pct}% от ${d.sales}.\n\nПример: маржа 20% значит — с каждых 100 000 ₸ продаж чистыми остаётся 20 000 ₸. Чем выше — тем лучше.`,
@@ -1276,7 +1285,7 @@ let title, bodyHtml;
 if(type==='sales'){
 title = '💰 Продажи — детальный разбор';
 const chObj = {};
-['agg','term','cash','unpaid'].forEach(g=> Object.entries(totals[g]||{}).forEach(([k,v])=>{ chObj[COLUMNS[k].name] = v; }));
+['agg','term','cash','unpaid','podzp'].forEach(g=> Object.entries(totals[g]||{}).forEach(([k,v])=>{ chObj[COLUMNS[k].name] = v; }));
 const entries = Object.entries(chObj).sort((a,b)=>b[1]-a[1]);
 const top = entries[0];
 const topShare = f.sales>0 && top ? (top[1]/f.sales*100).toFixed(0) : 0;
@@ -1835,7 +1844,7 @@ document.querySelectorAll('#presBranchCompare .bar-fill').forEach(el=>{ el.style
 const channelTotals = {};
 CONFIG.branches.forEach(b=>{
 const {totals} = sumByGroupRange(b, from, to);
-['agg','term','cash','unpaid'].forEach(g=>{
+['agg','term','cash','unpaid','podzp'].forEach(g=>{
 Object.entries(totals[g]||{}).forEach(([k,v])=>{
 const name = COLUMNS[k] ? COLUMNS[k].name : k;
 channelTotals[name] = (channelTotals[name]||0) + v;
@@ -2051,7 +2060,7 @@ return html;
 }).join('');
 const isOpen = q ? true : g===guidedGroup;
 return `<div class="acc-group ${isOpen?'open':''}" data-g="${g}">
-<div class="acc-group-header"><span>${GROUP_LABELS[g]}</span><span class="chev">▶</span></div>
+<div class="acc-group-header"><span>${GROUP_LABELS[g]} ${infoIconHtml('grp_'+g)}</span><span class="chev">▶</span></div>
 <div class="acc-sublist"><div>${newCatBtnHtml}${itemsHtml}</div></div>
 </div>`;
 }).join('');
@@ -2059,6 +2068,13 @@ if(q && !box.innerHTML.trim()){
 box.innerHTML = '<div class="empty">Ничего не найдено — попробуй другое слово</div>';
 }
 
+box.querySelectorAll('.acc-group-header .info-icon').forEach(icon=>{
+icon.addEventListener('click', e=>{
+e.stopPropagation();
+const text = INFO_EXPLAINERS[icon.dataset.info] ? INFO_EXPLAINERS[icon.dataset.info]() : '';
+showInfoModal(text);
+});
+});
 box.querySelectorAll('.acc-group-header').forEach(header=>{
 header.addEventListener('click', ()=>{
 if(catSearchQuery.trim()) return; // при активном поиске группы не сворачиваем вручную
@@ -2116,6 +2132,7 @@ document.getElementById('newCatSaveBtn').addEventListener('click', saveNewCat);
 }
 setupInlineInput();
 measureAccordionHeights();
+watchOpenAccordion();
 }
 function measureAccordionHeights(){
 document.querySelectorAll('.acc-group:not(.open) .acc-sublist').forEach(el=>{
@@ -2131,6 +2148,19 @@ el.style.maxHeight = el.scrollHeight + 'px';
 });
 });
 });
+}
+// Наблюдатель: если ВНУТРИ открытой группы что-то меняется (появилось поле
+// "Изъято", примечание, новая строка и т.д.) — высота пересчитывается сама,
+// не нужно вручную вызывать пересчёт в каждом отдельном месте кода.
+let accordionResizeObserver = null;
+function watchOpenAccordion(){
+if(accordionResizeObserver) accordionResizeObserver.disconnect();
+const openSublist = document.querySelector('.acc-group.open .acc-sublist');
+if(!openSublist) return;
+accordionResizeObserver = new ResizeObserver(()=>{
+openSublist.style.maxHeight = openSublist.scrollHeight + 'px';
+});
+accordionResizeObserver.observe(openSublist.firstElementChild || openSublist);
 }
 
 function setupInlineInput(){
@@ -2719,12 +2749,17 @@ const agg = sumGroupFromMerged_(merged,'agg');
 const term = sumGroupFromMerged_(merged,'term');
 const cash = sumGroupFromMerged_(merged,'cash');
 const unpaid = sumGroupFromMerged_(merged,'unpaid');
-const salesTotal = agg + term + cash + unpaid;
+const podzp = sumGroupFromMerged_(merged,'podzp');
+// "Под ЗП" — сотрудник забирает товар (например еду), а его стоимость вычитается
+// из будущей зарплаты. Товар реально ушёл со склада — это продажа, просто
+// оплаченная не деньгами, а зарплатой сотрудника. Поэтому считаем и как продажу,
+// и как расход на зарплату — на итог "чистыми" это не влияет (взаимно гасится),
+// но общая выручка и зарплатный фонд считаются честно.
+const salesTotal = agg + term + cash + unpaid + podzp;
 const expense = sumGroupFromMerged_(merged,'expense');
 const salaryDaily = sumGroupFromMerged_(merged,'salary_daily');
 const advance = sumGroupFromMerged_(merged,'advance');
 const courier = sumGroupFromMerged_(merged,'courier');
-const podzp = sumGroupFromMerged_(merged,'podzp');
 const salary = salaryDaily + advance + courier + podzp;
 return {
 sales: salesTotal, agg, term, cash, unpaid,
