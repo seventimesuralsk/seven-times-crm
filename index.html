@@ -537,6 +537,16 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div id="analyticsGrid"></div>
 <div id="analyticsRatios" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);"></div>
 </div>
+
+<div class="card" id="planCard" style="display:none;">
+<h3>🎯 План продаж на месяц</h3>
+<div id="planContent"></div>
+</div>
+
+<div class="card" id="forecastCard" style="display:none;">
+<h3>📈 Прогноз на конец месяца</h3>
+<div id="forecastContent"></div>
+</div>
 <div class="totals-bar" id="totalsBar"></div>
 <div class="card">
 <h3>Агрегаторы</h3>
@@ -645,6 +655,12 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 </div>
 
 <div class="view" id="view-settings">
+<div class="card">
+<h3>🎯 План продаж на месяц</h3>
+<p style="color:var(--sub);font-size:13px;margin-top:0;">Задай цель по каждому филиалу — в "Показать отчёт" появится прогресс "план/факт" и прогноз выполнения.</p>
+<div class="row" id="settingsTargetsRow"></div>
+<div class="footer-actions"><button class="save-btn" id="saveTargetsBtn">Сохранить план</button></div>
+</div>
 <div class="card">
 <h3>Доступ (главный админ)</h3>
 <div class="row">
@@ -858,7 +874,7 @@ configSyncDebounce = setTimeout(()=>{
 apiPost('set_config', { fields: {
 pin: CONFIG.pin, adminName: CONFIG.adminName, adminAvatar: CONFIG.adminAvatar,
 adminPhone: CONFIG.adminPhone, adminEmail: CONFIG.adminEmail,
-branches: CONFIG.branches, cashiers: CONFIG.cashiers, freeColumns: CONFIG.freeColumns
+branches: CONFIG.branches, cashiers: CONFIG.cashiers, freeColumns: CONFIG.freeColumns, monthlyTargets: CONFIG.monthlyTargets
 }}).catch(err=> console.error('Не удалось сохранить настройки на сервере', err));
 }, 400);
 }
@@ -874,6 +890,7 @@ if(cfg.adminEmail!==undefined) CONFIG.adminEmail = cfg.adminEmail;
 if(cfg.branches){ try{ CONFIG.branches = JSON.parse(cfg.branches); }catch(e){} }
 if(cfg.cashiers){ try{ CONFIG.cashiers = JSON.parse(cfg.cashiers); }catch(e){} }
 if(cfg.freeColumns){ try{ CONFIG.freeColumns = JSON.parse(cfg.freeColumns); (CONFIG.freeColumns||[]).forEach(fc=>{ COLUMNS[fc.key] = {name:fc.name, group:fc.group}; }); }catch(e){} }
+if(cfg.monthlyTargets){ try{ CONFIG.monthlyTargets = JSON.parse(cfg.monthlyTargets); }catch(e){} }
 }catch(err){
 console.error('Не удалось загрузить настройки с сервера — используем локальные', err);
 }
@@ -2627,6 +2644,75 @@ requestAnimationFrame(()=> requestAnimationFrame(()=>{
 box.querySelectorAll('.vchart-bar').forEach(el=>{ el.style.height = el.dataset.h + '%'; });
 }));
 }
+function renderPlanAndForecast(){
+const target = (CONFIG.monthlyTargets || {})[state.branch];
+const planCard = document.getElementById('planCard');
+const forecastCard = document.getElementById('forecastCard');
+
+const today = new Date(localDateStr()+'T00:00:00');
+const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+const daysElapsed = today.getDate();
+const {merged} = sumByGroupRange(state.branch, monthStart, today);
+const fMonth = computeFormulas(merged);
+const actual = fMonth.sales;
+const dailyAvg = daysElapsed>0 ? actual/daysElapsed : 0;
+const projected = dailyAvg * daysInMonth;
+
+// --- План / Факт ---
+if(!target){
+planCard.style.display = '';
+document.getElementById('planContent').innerHTML = `<div class="empty">План на этот месяц не задан. Задай его в Настройках, чтобы видеть прогресс.</div>`;
+} else {
+planCard.style.display = '';
+const pct = Math.min((actual/target*100), 999);
+const barColor = pct>=100 ? 'var(--green)' : (pct>=70 ? 'var(--blue)' : 'var(--orange)');
+const remaining = Math.max(target-actual, 0);
+const daysLeft = Math.max(daysInMonth-daysElapsed, 0);
+const neededPerDay = daysLeft>0 ? remaining/daysLeft : remaining;
+document.getElementById('planContent').innerHTML = `
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;">
+<div style="font-size:22px;font-weight:800;">${fmt(actual)}</div>
+<div style="font-size:13px;color:var(--sub);">из ${fmt(target)}</div>
+</div>
+<div class="bar-track" style="height:16px;"><div class="bar-fill" data-w="${Math.min(pct,100).toFixed(1)}" style="width:0%;background:${barColor};"></div></div>
+<div style="display:flex;justify-content:space-between;margin-top:6px;font-size:12.5px;color:var(--sub);">
+<span>${pct.toFixed(1)}% выполнено</span>
+<span>Осталось: ${fmt(remaining)}</span>
+</div>
+${remaining>0 ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--sub);">Чтобы выполнить план, нужно продавать в среднем <b style="color:var(--ink);">${fmt(neededPerDay)}</b> в день (осталось ${daysLeft} дн.)</div>` : `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--green);font-weight:600;">🎉 План уже выполнен!</div>`}
+`;
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+const el = document.querySelector('#planContent .bar-fill');
+if(el) el.style.width = el.dataset.w + '%';
+}));
+}
+
+// --- Прогноз ---
+forecastCard.style.display = '';
+const pctOfDaysGone = (daysElapsed/daysInMonth*100).toFixed(0);
+const vsTargetHtml = target ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:13px;color:var(--sub);">При таком темпе к концу месяца план будет ${projected>=target ? `<b style="color:var(--green);">выполнен (${(projected/target*100).toFixed(0)}%)</b>` : `<b style="color:var(--red);">не выполнен (${(projected/target*100).toFixed(0)}%)</b>`}</div>` : '';
+document.getElementById('forecastContent').innerHTML = `
+<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
+<div style="flex:1;min-width:140px;">
+<div style="font-size:11.5px;color:var(--sub);">Прогноз на весь месяц</div>
+<div style="font-size:22px;font-weight:800;">${fmt(projected)}</div>
+</div>
+<div style="flex:1;min-width:140px;">
+<div style="font-size:11.5px;color:var(--sub);">Средняя в день</div>
+<div style="font-size:22px;font-weight:800;">${fmt(dailyAvg)}</div>
+</div>
+</div>
+<div class="bar-track" style="height:10px;"><div class="bar-fill" data-w="${pctOfDaysGone}" style="width:0%;background:linear-gradient(90deg,#8e8e93,#c7c7cc);"></div></div>
+<div style="font-size:11.5px;color:var(--sub);margin-top:4px;">Прошло ${daysElapsed} из ${daysInMonth} дней месяца (${pctOfDaysGone}%)</div>
+${vsTargetHtml}
+`;
+requestAnimationFrame(()=>requestAnimationFrame(()=>{
+const el = document.querySelector('#forecastContent .bar-fill');
+if(el) el.style.width = el.dataset.w + '%';
+}));
+}
+
 function renderDashboard(){
 renderPeriodExtra();
 if(state.period === 'daily'){
@@ -2660,7 +2746,7 @@ return fmtRange(from);
 }
 return fmtRange(from)+'–'+fmtRange(to)+' ('+days+' дн.)';
 }
-document.getElementById('analyticsCard').querySelector('h3').innerHTML = `📊 Аналитика — было / стало`;
+document.getElementById('analyticsCard').querySelector('h3').innerHTML = `📊 Аналитика <span style="font-weight:400;color:var(--sub);font-size:12px;">— в сравнении с прошлым периодом</span>`;
 
 const kpis = [
 {label:'Продажи', cur:f.sales, prev:pf.sales, goodIfUp:true},
@@ -2669,13 +2755,12 @@ const kpis = [
 {label:'Итог чистыми', cur:f.net, prev:pf.net, goodIfUp:true},
 ];
 document.getElementById('analyticsGrid').innerHTML = `
-<div style="font-size:12.5px;color:var(--sub);margin-bottom:10px;font-weight:600;">${periodLabelHuman(prevFrom,prevTo)} <span style="opacity:.5;">→</span> ${periodLabelHuman(curFrom,curTo)}</div>
 <div class="kpi-grid">${kpis.map(k=>{
 const pct = pctChange(k.cur, k.prev);
 const isGood = k.goodIfUp ? pct>=0 : pct<=0;
 return `<div class="kpi-cell">
 <div class="kpi-label">${k.label}</div>
-<div class="kpi-was-now">${fmt(k.prev)} <span style="opacity:.5;">→</span> <b>${fmt(k.cur)}</b></div>
+<div class="kpi-value">${fmt(k.cur)}</div>
 <div>${trendBadgeHtml(pct, isGood)}</div>
 </div>`;
 }).join('')}</div>`;
@@ -2693,6 +2778,8 @@ zakupRatio: {val: fmt(f.zakup), sales: fmt(f.sales), pct: zakupPct.toFixed(1)},
 salaryRatio: {val: fmt(f.salary), sales: fmt(f.sales), pct: salaryPct.toFixed(1)},
 netMargin: {val: fmt(f.net), sales: fmt(f.sales), pct: netPct.toFixed(1)},
 });
+
+renderPlanAndForecast();
 
 document.getElementById('totalsBar').innerHTML = `
 <div class="stat pos"><div class="label">Общая продажа</div><div class="value">${fmt(f.sales)}</div></div>
@@ -2844,7 +2931,20 @@ document.getElementById('branchList').innerHTML = CONFIG.branches.map((b,i)=>`
 <button class="ghost-btn" onclick="removeBranch(${i})" style="flex:0;">Удалить</button>
 </div>`).join('');
 renderCashierList();
+const targets = CONFIG.monthlyTargets || {};
+document.getElementById('settingsTargetsRow').innerHTML = CONFIG.branches.map(b=>
+`<div class="field"><label>${b} — план на месяц, ₸</label><input type="number" class="target-input" data-branch="${b}" value="${targets[b]||''}" placeholder="например 3000000"></div>`
+).join('');
 }
+document.getElementById('saveTargetsBtn').addEventListener('click', ()=>{
+const targets = {};
+document.querySelectorAll('.target-input').forEach(inp=>{
+if(inp.value) targets[inp.dataset.branch] = Number(inp.value);
+});
+CONFIG.monthlyTargets = targets;
+saveConfig();
+toast('План сохранён');
+});
 const CASHIER_PERM_LABELS = { entry:'Заполнять отчёт', reports:'Смотреть отчёты', suppliers:'Поставщики' };
 function renderCashierList(){
 const box = document.getElementById('cashierList');
