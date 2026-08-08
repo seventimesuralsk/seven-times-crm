@@ -2655,8 +2655,8 @@ const box = document.getElementById('periodExtra');
 const today = new Date(state.date+'T00:00:00');
 if(state.period === 'daily'){
 box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
-<input type="date" id="dailyFrom" value="${state.dailyFrom||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
-<input type="date" id="dailyTo" value="${state.dailyTo||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="dailyFrom" value="${state.dailyFrom||''}" max="${localDateStr()}" style="border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="dailyTo" value="${state.dailyTo||''}" max="${localDateStr()}" style="border:1.5px solid var(--line2);min-width:130px;">
 </div>`;
 const apply = ()=>{
 state.dailyFrom = document.getElementById('dailyFrom').value;
@@ -2671,8 +2671,8 @@ if(state.period === 'month'){
 const m = state.monthSel!==undefined ? state.monthSel : today.getMonth();
 const y = state.monthYearSel!==undefined ? state.monthYearSel : today.getFullYear();
 box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
-<select id="monthSelect" style="background:#fff;border:1.5px solid var(--line2);">${MONTH_NAMES_RU.map((name,i)=>`<option value="${i}" ${i===m?'selected':''}>${name}</option>`).join('')}</select>
-<input type="number" id="monthYear" value="${y}" max="${new Date().getFullYear()}" style="max-width:110px;background:#fff;border:1.5px solid var(--line2);">
+<select id="monthSelect" style="border:1.5px solid var(--line2);">${MONTH_NAMES_RU.map((name,i)=>`<option value="${i}" ${i===m?'selected':''}>${name}</option>`).join('')}</select>
+<input type="number" id="monthYear" value="${y}" max="${new Date().getFullYear()}" style="max-width:110px;border:1.5px solid var(--line2);">
 </div>`;
 document.getElementById('monthSelect').addEventListener('change', e=>{
 const today = new Date();
@@ -2693,8 +2693,8 @@ return;
 }
 if(state.period === 'range'){
 box.innerHTML = `<div class="row no-print" style="background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;">
-<input type="date" id="rangeFrom" value="${state.rangeFrom||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
-<input type="date" id="rangeTo" value="${state.rangeTo||''}" max="${localDateStr()}" style="background:#fff;border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="rangeFrom" value="${state.rangeFrom||''}" max="${localDateStr()}" style="border:1.5px solid var(--line2);min-width:130px;">
+<input type="date" id="rangeTo" value="${state.rangeTo||''}" max="${localDateStr()}" style="border:1.5px solid var(--line2);min-width:130px;">
 </div>`;
 const apply = ()=>{
 state.rangeFrom = document.getElementById('rangeFrom').value;
