@@ -31,7 +31,7 @@
 --sub:#9a9a9e;
 --line:#2c2c2e;
 --line2:#48484a;
---surface2:#1c1c1e;
+--surface2:#2c2c2e;
 --blue:#0a84ff;
 --blue-d:#409cff;
 --green:#30d158;
@@ -80,7 +80,7 @@ color:var(--ink);
 padding:10px 12px;
 outline:none;
 }
-select:focus, input:focus, textarea:focus{background:var(--card);border-color:var(--ink);}
+select:focus, input:focus, textarea:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(10,132,255,.15);}
 .branch-select{font-weight:700;}
 .container{max-width:680px;margin:0 auto;padding:12px 12px 0;}
 .tabs{
@@ -151,6 +151,7 @@ padding:18px;margin-bottom:12px;box-shadow:var(--shadow);
 .card h3{margin:0 0 14px;font-size:15px;letter-spacing:-.01em;font-weight:800;}
 .reminder-card{background:#FFF8E1;border-color:#F0C36D;color:#5c4a1c;}
 .reminder-card .ghost-btn{background:transparent;border-color:currentColor;color:inherit;}
+[data-theme="dark"] .reminder-card{background:#3d3419;border-color:#6b5a26;color:#ffe9a8;}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
 .row > *{flex:1;min-width:120px;}
 .mode-switch{display:flex;gap:6px;margin-bottom:16px;background:var(--surface2);border-radius:11px;padding:4px;overflow:hidden;}
