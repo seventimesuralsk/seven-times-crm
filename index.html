@@ -159,7 +159,7 @@ text-align:center;font-weight:600;font-size:13px;color:var(--sub);cursor:pointer
 .mode-btn.active{background:var(--card);color:var(--ink);font-weight:800;box-shadow:0 1px 4px rgba(0,0,0,.1);}
 textarea{width:100%;min-height:140px;resize:vertical;line-height:1.5;}
 .parse-btn, .save-btn, .primary-btn{
-background:var(--ink);color:#fff;border:none;font-weight:700;cursor:pointer;padding:12px 18px;
+background:var(--blue);color:#fff;border:none;font-weight:700;cursor:pointer;padding:12px 18px;
 border-radius:13px;transition:.15s;
 }
 .parse-btn:active, .save-btn:active, .primary-btn:active{transform:scale(.97);opacity:.9;}
@@ -198,7 +198,7 @@ padding:16px;box-shadow:var(--shadow);
 .period-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
 .chip{padding:8px 14px;border-radius:6px;background:var(--surface2);font-size:13.5px;font-weight:600;
 color:var(--sub);cursor:pointer;border:1px solid var(--line);}
-.chip.active{background:var(--ink);color:#fff;}
+.chip.active{background:var(--blue);color:#fff;}
 .table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .table-scroll table{min-width:420px;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
@@ -226,7 +226,7 @@ tr.total-row td{font-weight:700;border-top:2px solid var(--ink);}
 .footer-actions{display:flex;gap:10px;margin-top:6px;justify-content:flex-end;flex-wrap:wrap;}
 .toast{
 position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
-background:var(--ink);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;
+background:var(--blue);color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;
 opacity:0;pointer-events:none;transition:.25s;box-shadow:var(--shadow);z-index:100;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -735,7 +735,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <button class="primary-btn" id="addBranchBtn" style="flex:0;">Добавить</button>
 </div>
 <div id="branchList" style="margin-top:12px;"></div>
-<p style="color:var(--sub);font-size:12.5px;margin-top:10px;">Название филиала должно совпадать с названием листа в Google Таблице — иначе сайт не сможет туда писать.</p>
+<p style="color:var(--sub);font-size:12.5px;margin-top:10px;">Название филиала должно совпадать с названием листа в Google Таблице — иначе сайт не сможет туда писать. Удаление филиала намеренно отключено — так безопаснее для истории данных (можно случайно стереть месяцы отчётов). Если нужно убрать филиал — напиши разработчику.</p>
 </div>
 <div class="card">
 <h3>Категории</h3>
@@ -3046,14 +3046,11 @@ avSel.innerHTML = AVATAR_EMOJIS.map(e=>`<option value="${e}">${e}</option>`).joi
 avSel.value = CONFIG.adminAvatar || AVATAR_EMOJIS[0];
 document.getElementById('settingsPhone').value = CONFIG.adminPhone || '';
 document.getElementById('settingsEmail').value = CONFIG.adminEmail || '';
-document.getElementById('branchList').innerHTML = CONFIG.branches.map((b,i)=>`
-<div class="row" style="margin-bottom:8px;">
+document.getElementById('branchList').innerHTML = CONFIG.branches.map((b)=>`
+<div class="row" style="margin-bottom:8px;align-items:center;">
 <div style="flex:2;">${b}</div>
-<button class="ghost-btn branch-del-btn" data-idx="${i}" style="flex:0;">Удалить</button>
+<div style="flex:0;font-size:11.5px;color:var(--sub);">🔒 удаление отключено</div>
 </div>`).join('');
-document.getElementById('branchList').querySelectorAll('.branch-del-btn').forEach(btn=>{
-btn.addEventListener('click', ()=> removeBranch(Number(btn.dataset.idx)));
-});
 renderCashierList();
 const targets = CONFIG.monthlyTargets || {};
 document.getElementById('settingsTargetsRow').innerHTML = CONFIG.branches.map(b=>
