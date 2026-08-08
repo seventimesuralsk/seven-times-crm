@@ -24,6 +24,26 @@
 --radius:12px;
 --shadow:0 1px 2px rgba(0,0,0,.04), 0 8px 20px rgba(0,0,0,.06);
 }
+[data-theme="dark"]{
+--bg:#000000;
+--card:#1c1c1e;
+--ink:#ffffff;
+--sub:#9a9a9e;
+--line:#2c2c2e;
+--line2:#38383a;
+--surface2:#1c1c1e;
+--blue:#0a84ff;
+--blue-d:#409cff;
+--green:#30d158;
+--red:#ff453a;
+--orange:#ff9f0a;
+--navy:#1c1c1e;
+--navy2:#1c1c1e;
+--shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 20px rgba(0,0,0,.4);
+}
+[data-theme="dark"] header{background:#000000;}
+[data-theme="dark"] .sidebar{background:#1c1c1e;}
+[data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea{color:#fff;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{margin:0;padding:0;}
 body{
@@ -415,6 +435,7 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="header-icons">
 <select id="branchSelect" class="branch-select" style="width:auto;"></select>
 <input type="date" id="dateSelect" style="display:none;">
+<button class="icon-btn" id="darkModeToggle" title="Тёмная тема">🌙</button>
 <button class="icon-btn hamburger-btn" id="hamburgerBtn" title="Меню"><span class="hamburger-bars"><span></span><span></span></span></button>
 </div>
 </header>
@@ -1521,6 +1542,17 @@ merged[key] = (merged[key]||0) + v;
 });
 return {merged};
 }
+/* ---------- ТЁМНАЯ ТЕМА ---------- */
+function applyTheme(mode){
+document.documentElement.setAttribute('data-theme', mode);
+document.getElementById('darkModeToggle').textContent = mode==='dark' ? '☀️' : '🌙';
+}
+applyTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+document.getElementById('darkModeToggle').addEventListener('click', ()=>{
+const cur = document.documentElement.getAttribute('data-theme');
+applyTheme(cur==='dark' ? 'light' : 'dark');
+});
+
 function openSidebar(){
 document.querySelector('.sidebar').classList.add('open');
 document.getElementById('sidebarBackdrop').classList.add('show');
@@ -2826,10 +2858,13 @@ return fmtRange(from);
 return fmtRange(from)+'–'+fmtRange(to)+' ('+days+' дн.)';
 }
 document.getElementById('analyticsCard').querySelector('h3').innerHTML = `📊 Аналитика ${infoIconHtml('analyticsGeneral')} <span style="font-weight:400;color:var(--sub);font-size:12px;">— в сравнении с прошлым периодом</span>`;
-document.getElementById('analyticsCard').querySelector('h3').querySelector('.info-icon').addEventListener('click', e=>{
+const analyticsInfoIcon = document.getElementById('analyticsCard').querySelector('h3').querySelector('.info-icon');
+if(analyticsInfoIcon){
+analyticsInfoIcon.addEventListener('click', e=>{
 e.stopPropagation();
 showInfoModal('Сравниваем выбранный период с точно таким же по длине периодом ДО него.\n\nНапример: выбрал "7 дней" — сравнивает с предыдущими 7 днями. Выбрал "Сегодня" — сравнивает со вчера.\n\n▲ зелёным — стало лучше. ▼ красным — стало хуже. Для расходов и зарплаты рост — это плохо (красный), а снижение — хорошо (зелёный).\n\nПодсказка: нажми на любую из четырёх карточек ниже (Продажи, Расходы и т.д.) — откроется подробный разбор.');
 });
+}
 
 const kpis = [
 {label:'Продажи', cur:f.sales, prev:pf.sales, goodIfUp:true, type:'sales'},
@@ -3014,8 +3049,11 @@ document.getElementById('settingsEmail').value = CONFIG.adminEmail || '';
 document.getElementById('branchList').innerHTML = CONFIG.branches.map((b,i)=>`
 <div class="row" style="margin-bottom:8px;">
 <div style="flex:2;">${b}</div>
-<button class="ghost-btn" onclick="removeBranch(${i})" style="flex:0;">Удалить</button>
+<button class="ghost-btn branch-del-btn" data-idx="${i}" style="flex:0;">Удалить</button>
 </div>`).join('');
+document.getElementById('branchList').querySelectorAll('.branch-del-btn').forEach(btn=>{
+btn.addEventListener('click', ()=> removeBranch(Number(btn.dataset.idx)));
+});
 renderCashierList();
 const targets = CONFIG.monthlyTargets || {};
 document.getElementById('settingsTargetsRow').innerHTML = CONFIG.branches.map(b=>
