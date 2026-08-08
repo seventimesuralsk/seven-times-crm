@@ -296,6 +296,23 @@ display:flex;justify-content:space-between;font-size:9.5px;color:#666;
 .print-only{display:none;}
 @media print{ .print-only{display:block;} }
 /* ---------- ЭКРАНЫ ВХОДА ---------- */
+.ios-notif{
+position:fixed;top:12px;left:50%;
+transform:translateX(-50%) translateY(-140%);
+width:min(92vw,420px);z-index:600;
+background:rgba(250,250,250,.82);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
+border-radius:18px;box-shadow:0 10px 40px rgba(0,0,0,.25);
+padding:12px 14px;display:flex;gap:10px;align-items:flex-start;
+transition:transform .5s cubic-bezier(.18,1.2,.4,1);
+pointer-events:none;
+}
+[data-theme="dark"] .ios-notif{background:rgba(30,30,32,.82);}
+.ios-notif.show{transform:translateX(-50%) translateY(0);}
+.ios-notif-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#0071e3,#5ac8fa);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.ios-notif-title{font-size:14px;font-weight:600;color:#1d1d1f;}
+[data-theme="dark"] .ios-notif-title{color:#fff;}
+.ios-notif-text{font-size:13.5px;color:#3a3a3c;margin-top:2px;line-height:1.35;}
+[data-theme="dark"] .ios-notif-text{color:#c7c7cc;}
 .gate{
 position:fixed;inset:0;background:var(--bg);z-index:300;
 display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -397,6 +414,13 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="welcome-actions">
 <button class="primary-btn" id="goEntryBtn">Заполнить отчёт</button>
 <button class="ghost-btn" id="goReportsBtn">Посмотреть отчёты</button>
+</div>
+</div>
+<div id="iosNotification" class="ios-notif">
+<div class="ios-notif-icon">☕</div>
+<div class="ios-notif-body">
+<div class="ios-notif-title" id="iosNotifTitle"></div>
+<div class="ios-notif-text" id="iosNotifText"></div>
 </div>
 </div>
 <div id="appRoot" style="display:none;">
@@ -1346,6 +1370,51 @@ osc.connect(gain); gain.connect(audioCtx.destination);
 osc.start(t); osc.stop(t+0.05);
 }catch(e){}
 }
+function playNotifSound(){
+try{
+if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+if(audioCtx.state === 'suspended') audioCtx.resume();
+const t = audioCtx.currentTime;
+[[880,0], [1318.5,0.11]].forEach(([freq, delay])=>{
+const osc = audioCtx.createOscillator();
+const gain = audioCtx.createGain();
+osc.type = 'sine';
+osc.frequency.setValueAtTime(freq, t+delay);
+gain.gain.setValueAtTime(0.0001, t+delay);
+gain.gain.exponentialRampToValueAtTime(0.09, t+delay+0.02);
+gain.gain.exponentialRampToValueAtTime(0.0001, t+delay+0.32);
+osc.connect(gain); gain.connect(audioCtx.destination);
+osc.start(t+delay); osc.stop(t+delay+0.35);
+});
+}catch(e){}
+}
+
+/* ---------- ПРИВЕТСТВЕННОЕ УВЕДОМЛЕНИЕ (в стиле iPhone) ---------- */
+const WELCOME_MESSAGES = [
+'сегодня продажи должны гореть 🔥 ты справишься',
+'кофе, отчёты, повторить ☕️ погнали',
+'филиал не сам себя посчитает, вперёд, чемпионка',
+'сегодня точно будет ровный день, чувствую это',
+'заходи, считай, зарабатывай — стандартная программа',
+'без паники, всё под контролем (у тебя точно)',
+'касса сама себя не сверит, ты знаешь что делать',
+'сегодня явно день, когда всё сойдётся до тенге',
+'открывай, работаем, потом отдыхать',
+'ты и кофе — непобедимая команда сегодня',
+'заходишь как босс, работаешь как босс',
+'сегодня без сюрпризов, только цифры и профит',
+];
+function showWelcomeNotification(){
+const name = currentUser ? currentUser.name : ADMIN_NAME();
+const msg = WELCOME_MESSAGES[Math.floor(Math.random()*WELCOME_MESSAGES.length)];
+document.getElementById('iosNotifTitle').textContent = `Seven Times · Привет, ${name} 👋`;
+document.getElementById('iosNotifText').textContent = msg;
+const el = document.getElementById('iosNotification');
+playNotifSound();
+el.classList.add('show');
+setTimeout(()=> el.classList.remove('show'), 4000);
+}
+
 document.addEventListener('click', e=>{
 if(e.target.closest('button, .pick-chip, .chip, .side-link, .mode-btn, .acc-item, .icon-btn, .tab, .acc-group-header, .info-icon')){
 playClickSound();
@@ -3278,12 +3347,11 @@ document.querySelectorAll('.branch-tile').forEach(tile=>{
 tile.addEventListener('click', ()=>{
 state.branch = tile.dataset.b;
 document.getElementById('gateBranch').style.display='none';
-document.getElementById('gateWelcome').style.display='flex';
-const name = currentUser ? currentUser.name : ADMIN_NAME();
-const avatar = currentUser ? (currentUser.avatar||'🙂') : (CONFIG.adminAvatar||'🙂');
-document.getElementById('welcomeTitle').textContent = `${avatar} Привет, ${name}!`;
-document.getElementById('welcomeSub').textContent = `Филиал: ${state.branch}. Что делаем?`;
 applyPermissions();
+const canEntry = currentUser ? (currentUser.permissions||[]).includes('entry') : true;
+const canReports = currentUser ? (currentUser.permissions||[]).includes('reports') : true;
+enterApp(canReports ? 'fullreport' : (canEntry ? 'entry' : 'suppliers'));
+showWelcomeNotification();
 });
 });
 }
