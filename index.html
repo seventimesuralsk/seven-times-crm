@@ -445,10 +445,10 @@ animation:modalPop .25s cubic-bezier(.34,1.4,.64,1);
 <div class="side-link" data-view="reports" data-report-group="podzp">Под ЗП</div>
 <div class="side-group-title">Прочее</div>
 <div class="side-link" id="presentationLink" style="background:linear-gradient(135deg,#0071e3,#5ac8fa);color:#fff;font-weight:500;display:flex;align-items:center;justify-content:space-between;">
-<span>🎁 Презентация</span><span style="font-size:11px;opacity:.85;">🔒</span>
+<span>Презентация</span><span style="background:#fff;color:var(--blue);font-size:9.5px;font-weight:600;padding:2px 6px;border-radius:6px;">новое</span>
 </div>
 <div class="side-link" id="employeesLink" style="display:flex;align-items:center;justify-content:space-between;">
-<span>👥 Сотрудники</span><span style="background:var(--red);color:#fff;font-size:9.5px;font-weight:600;padding:2px 6px;border-radius:6px;">NEW</span>
+<span>Сотрудники</span><span style="background:var(--red);color:#fff;font-size:9.5px;font-weight:600;padding:2px 6px;border-radius:6px;">новое</span>
 </div>
 <div class="side-link" data-view="settings">Настройки</div>
 <div class="side-link" id="logoutLink" style="color:var(--red);margin-top:10px;">Выйти</div>
@@ -1732,7 +1732,7 @@ if(pass !== null) toast('Неверный пароль');
 return;
 }
 presentationUnlocked = true;
-document.getElementById('presentationLink').innerHTML = '<span>🎁 Презентация</span>';
+document.getElementById('presentationLink').innerHTML = '<span>Презентация</span>';
 }
 document.querySelectorAll('.side-link').forEach(t=>t.classList.remove('active'));
 document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -1743,7 +1743,7 @@ renderPresentation();
 });
 document.getElementById('employeesLink').addEventListener('click', ()=>{
 closeSidebar();
-showIosNotification('👥 Сотрудники', 'Скоро здесь появится: часы смен, зарплата по ставке, графики и KPI по каждому сотруднику. Уже в разработке 🚀');
+showIosNotification('Сотрудники', 'Скоро здесь появится: часы смен, зарплата по ставке, графики и KPI по каждому сотруднику. Уже в разработке 🚀');
 });
 document.querySelectorAll('#presPeriodChips .chip').forEach(chip=>{
 chip.addEventListener('click', ()=>{
